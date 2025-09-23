@@ -1,0 +1,60 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #050711; /* A very dark, deep blue */
+    color: #E0E0E0;
+}
+
+.gradient-text {
+    background: linear-gradient(90deg, #A55EE3, #4390F1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+}
+
+.feature-card, .roadmap-card, .path-step, .why-card {
+    background: rgba(10, 14, 31, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.cta-button-primary {
+    background: linear-gradient(90deg, #A55EE3, #4390F1);
+    transition: all 0.3s ease;
+}
+
+.cta-button-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 8px 25px rgba(165, 94, 227, 0.3);
+}
+
+.cta-button-secondary {
+    background-color: transparent;
+    border: 1px solid #4390F1;
+    transition: all 0.3s ease;
+}
+
+.cta-button-secondary:hover {
+    background-color: rgba(67, 144, 241, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Scroll Animation Styles */
+.scroll-animate {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    will-change: opacity, transform;
+}
+
+.scroll-animate.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.delay-1 { transition-delay: 0.1s; }
+.delay-2 { transition-delay: 0.2s; }
+.delay-3 { transition-delay: 0.3s; }
+.delay-4 { transition-delay: 0.4s; }
+
