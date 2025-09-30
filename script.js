@@ -1,21 +1,37 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // --- WHITELIST COUNTER ---
+    // ===============================
+    // --- SUPABASE CONFIG ---
+    // ===============================
     const SUPABASE_URL = 'https://dyferdlczmzxurlfrjnd.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5ZmVyZGxjem16eHVybGZyam5kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjYxMDMsImV4cCI6MjA3NDIwMjEwM30.LTXkmO2MkqYqg4g7Bv7H8u1rgQnDnQ43FDaT7DzFAt8';
     const { createClient } = supabase;
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ===============================
+    // --- WHITELIST COUNTER ---
+    // ===============================
     async function updateWhitelistCounter() {
         try {
-            const { count, error } = await supabaseClient.from('whitelist').select('*', { count: 'exact', head: true });
+            const { count, error } = await supabaseClient
+                .from('whitelist')
+                .select('*', { count: 'exact', head: true });
+
             if (error) throw error;
             const currentCount = Math.min(count || 0, 500);
-            document.getElementById('whitelist-counter').textContent = `${currentCount} / 500 Spots Filled`;
-            document.getElementById('progress-bar').style.width = `${(currentCount / 500) * 100}%`;
-        } catch (error) { console.error('Error fetching whitelist count:', error.message); }
+
+            document.getElementById('whitelist-counter').textContent =
+                `${currentCount} / 500 Spots Filled`;
+            document.getElementById('progress-bar').style.width =
+                `${(currentCount / 500) * 100}%`;
+        } catch (error) {
+            console.error('Error fetching whitelist count:', error.message);
+        }
     }
     updateWhitelistCounter();
 
-     // --- SCROLL ANIMATIONS for informational sections ---
+    // ===============================
+    // --- SCROLL ANIMATIONS ---
+    // ===============================
     const animatedElements = document.querySelectorAll('.scroll-animate');
     if ("IntersectionObserver" in window) {
         const observer = new IntersectionObserver((entries) => {
@@ -31,99 +47,55 @@ document.addEventListener("DOMContentLoaded", () => {
         animatedElements.forEach(el => el.classList.add('is-visible'));
     }
 
-
-    // --- LIVE TOKEN FEED SCRIPT ---
+    // ===============================
+    // --- LIVE TOKEN FEED ---
+    // ===============================
     const POLLING_INTERVAL_MS = 4000;
-    const GEMINI_API_KEY = ""; // Canvas injects this.
-    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
-    
     const displayedTokens = new Set();
-    const insightsCache = new Map();
     const feedContainer = document.getElementById('token-feed');
     const statusElement = document.getElementById('status');
-    
-    const mockApiServer = {
-        tokens: [],
-        generateRandomToken() {
-            const tickers = ['PEPE', 'WIF', 'BONK', 'DOGE', 'SHIB', 'SOL', 'MOON', 'GEM', 'PUMP'];
-            const names = ['Galaxy Coin', 'Rocket Inu', 'Crypto King', 'Solana Cat', 'Pump Fun Special', 'Meme Lord'];
-            const ticker = tickers[Math.floor(Math.random() * tickers.length)];
-            const name = names[Math.floor(Math.random() * names.length)];
-            const randomId = Math.random().toString(36).substring(2, 8);
-            const coinMint = `9v4WapYT3Z${randomId}YLaHNrXLtpump`;
-            return {
-                coinMint: coinMint, name: `${name} ${ticker}`, ticker: ticker,
-                imageUrl: `https://placehold.co/48x48/050711/1cff97?text=${ticker[0]}`,
-                volume: Math.random() * 500000,
-                marketCap: Math.random() * 1000000 + 5000,
-                liquidity: Math.random() * 100000 + 1000,
-                ageInMinutes: Math.floor(Math.random() * 120),
-                socials: {
-                    twitter: Math.random() > 0.4 ? `https://twitter.com/${ticker}` : null,
-                    telegram: Math.random() > 0.3 ? `https://t.me/${ticker}` : null
-                },
-                links: {
-                    pump: `https://pump.fun/${coinMint}`,
-                    dexscreener: `https://dexscreener.com/solana/${coinMint}`,
-                    birdeye: `https://birdeye.so/token/${coinMint}?chain=solana`
-                },
-                fetchedAt: Date.now()
-            };
-        },
-        initialize() { for (let i = 0; i < 30; i++) this.tokens.push(this.generateRandomToken()); this.tokens.sort((a,b)=>b.fetchedAt - a.fetchedAt); },
-        getLiveTokens() {
-            if (Math.random() > 0.3) {
-                for (let i=0; i < Math.floor(Math.random()*3)+1; i++) this.tokens.unshift(this.generateRandomToken());
-            }
-            if (this.tokens.length > 200) this.tokens.length = 200;
-            return Promise.resolve({ tokens: [...this.tokens] });
-        }
+
+    const formatNum = (n) =>
+        n >= 1e6 ? `$${(n/1e6).toFixed(2)}M`
+        : n >= 1e3 ? `$${(n/1e3).toFixed(1)}K`
+        : `$${n.toFixed(0)}`;
+
+    const formatAge = (ms) => {
+        const minutes = Math.floor((Date.now() - ms) / 60000);
+        return minutes < 60
+            ? `${minutes}m ago`
+            : `${Math.floor(minutes/60)}h ${minutes%60}m ago`;
     };
-    mockApiServer.initialize();
 
-    const formatNum = (n) => n >= 1e6 ? `$${(n/1e6).toFixed(2)}M` : n >= 1e3 ? `$${(n/1e3).toFixed(1)}K` : `$${n.toFixed(0)}`;
-    const formatAge = (m) => m < 60 ? `${m}m ago` : `${Math.floor(m/60)}h ${m%60}m ago`;
-
-    async function fetchTokenInsight(token) {
-        const systemPrompt = "You are a witty, slightly cynical crypto market analyst. Provide a brief, one-sentence speculative analysis for a new token from pump.fun. The analysis should be creative and mention potential risks or upsides in a fun, meme-worthy manner. Do not give financial advice. Keep it under 20 words.";
-        const userQuery = `Analyze this token: Name: ${token.name}, Ticker: $${token.ticker}, Market Cap: ${formatNum(token.marketCap)}`;
-        const payload = {
-            contents: [{ parts: [{ text: userQuery }] }],
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-        };
-        try {
-            const response = await fetch(GEMINI_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            if (!response.ok) throw new Error(`API call failed with status: ${response.status}`);
-            const result = await response.json();
-            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) return text.trim();
-            throw new Error("Invalid response structure from Gemini API.");
-        } catch (error) {
-            console.error("Gemini API Error:", error);
-            return "Couldn't get an insight. The AI might be sleeping.";
-        }
-    }
-    
     async function fetchLiveTokens() {
         try {
-            const data = await mockApiServer.getLiveTokens();
+            const { data, error } = await supabaseClient
+                .from('tokens')
+                .select('*')
+                .order('creationTime', { ascending: false })
+                .limit(2000);
+
+            if (error) throw error;
             statusElement.style.display = 'none';
-            const newTokens = data.tokens.filter(t => !displayedTokens.has(t.coinMint));
+
+            const newTokens = data.filter(t => !displayedTokens.has(t.coinMint));
             if (newTokens.length === 0) return;
-            
+
             newTokens.forEach(t => displayedTokens.add(t.coinMint));
-            
+
+            // trim feed if > 2000
+            if (displayedTokens.size > 2000) {
+                displayedTokens.clear();
+                feedContainer.innerHTML = "";
+            }
+
             for (let i = newTokens.length - 1; i >= 0; i--) {
                 const tokenElement = createTokenElement(newTokens[i]);
                 feedContainer.prepend(tokenElement);
                 tokenElement.classList.add('new-token-animation');
             }
-        } catch (error) {
-            console.error("Fetch Error:", error);
+        } catch (err) {
+            console.error("❌ Fetch Error:", err);
             statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
         }
     }
@@ -131,12 +103,15 @@ document.addEventListener("DOMContentLoaded", () => {
     function createTokenElement(token) {
         const card = document.createElement('div');
         card.className = 'token-card rounded-lg p-3 sm:p-4';
-        
-        const socialsHTML = Object.entries(token.socials).filter(([,url]) => url).map(([name, url]) => `
-            <a href="${url}" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white" title="${name.charAt(0).toUpperCase() + name.slice(1)}">
-                ${name === 'twitter' ? `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.71v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path></svg>` : ''}
-                ${name === 'telegram' ? `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0C5.356 0 0 5.356 0 11.944s5.356 11.944 11.944 11.944 11.944-5.356 11.944-11.944C23.888 5.356 18.532 0 11.944 0zm5.922 8.232c-.156.748-.84 3.988-1.172 5.584-.328 1.596-.644 2.128-.948 2.168-.304.04-.624-.188-1.284-.6-1.044-.684-1.636-1.12-2.7-1.848-.96-.64-1.66-1.036-1.576-1.632.06-.44.404-1.48.832-3.26l.46-1.928c.184-.824.06-1.284-.192-1.344-.252-.06-.576.12-.9.324l-3.32 2.148c-.52.336-1.032.508-1.4.5-1.024-.024-1.68-.34-2.124-.92-.516-.684-.74-1.336-.62-1.848.144-.608.6-1.164 1.74-1.744 2.12-1.06 3.824-1.66 5.1-1.74 1.74-.108 2.76.24 3.168 1.1z"></path></svg>` : ''}
-            </a>`).join('');
+
+        const socialsHTML = [
+            token.twitter ? `<a href="${token.twitter}" target="_blank">Twitter</a>` : "",
+            token.telegram ? `<a href="${token.telegram}" target="_blank">Telegram</a>` : "",
+            token.website ? `<a href="${token.website}" target="_blank">Website</a>` : ""
+        ].join('');
+
+        const pumpLink = `https://pump.fun/${token.coinMint}`;
+        const dexLink = `https://dexscreener.com/solana/${token.coinMint}`;
 
         card.innerHTML = `
             <div class="grid grid-cols-12 gap-3 items-center">
@@ -151,65 +126,37 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="flex items-center space-x-2 text-xs text-gray-400 flex-wrap">
                         <span>$${token.ticker}</span>
                         <span class="text-gray-500">•</span>
-                        <span>${formatAge(token.ageInMinutes)}</span>
+                        <span>${formatAge(token.creationTime)}</span>
                         <div class="copy-address-container flex items-center space-x-1 cursor-pointer hover:text-white" title="Copy Address">
                             <span class="font-mono token-address">${token.coinMint.substring(0, 4)}...${token.coinMint.substring(token.coinMint.length - 4)}</span>
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                         </div>
                     </div>
                 </div>
                 <div class="hidden sm:col-span-3 sm:grid grid-cols-2 gap-2 text-xs text-center">
                     <div><div class="text-gray-500">MC</div><div class="font-semibold text-white">${formatNum(token.marketCap)}</div></div>
-                    <div><div class="text-gray-500">Volume</div><div class="font-semibold text-white">${formatNum(token.volume)}</div></div>
+                    <div><div class="text-gray-500">Vol</div><div class="font-semibold text-white">${formatNum(token.volume)}</div></div>
                 </div>
                 <div class="col-span-12 sm:col-span-3 flex items-center justify-end space-x-2">
-                   <a href="${token.links.pump}" target="_blank" rel="noopener noreferrer" class="action-btn p-2 rounded-md" title="Buy on Pump.fun"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 13.5L12 18L7.5 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
-                   <a href="${token.links.dexscreener}" target="_blank" rel="noopener noreferrer" class="action-btn p-2 rounded-md" title="View on DexScreener"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg></a>
-                   <button class="get-insight-btn ai-btn text-xs font-bold px-3 py-1.5 rounded-md" title="Get AI Insight">AI</button>
+                   <a href="${pumpLink}" target="_blank" class="action-btn p-2 rounded-md">Pump</a>
+                   <a href="${dexLink}" target="_blank" class="action-btn p-2 rounded-md">Dex</a>
                 </div>
             </div>
-            <div class="insight-content hidden mt-3 p-3 bg-gray-900/50 rounded text-sm text-purple-300 italic"></div>
         `;
 
-        const insightBtn = card.querySelector('.get-insight-btn');
-        const insightContent = card.querySelector('.insight-content');
+        // copy address logic
         const copyContainer = card.querySelector('.copy-address-container');
         const addressText = card.querySelector('.token-address');
-
-        copyContainer.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const tempTextarea = document.createElement('textarea');
-            tempTextarea.value = token.coinMint;
-            document.body.appendChild(tempTextarea);
-            tempTextarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempTextarea);
-            const originalText = addressText.textContent;
-            addressText.textContent = 'Copied!';
-            setTimeout(() => { addressText.textContent = originalText; }, 1500);
+        copyContainer.addEventListener('click', () => {
+            navigator.clipboard.writeText(token.coinMint);
+            const original = addressText.textContent;
+            addressText.textContent = "Copied!";
+            setTimeout(() => { addressText.textContent = original; }, 1500);
         });
 
-        insightBtn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            insightBtn.disabled = true;
-            insightBtn.innerHTML = `<svg class="insight-loading-spinner h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.75V6.25m0 11.5v1.5M17.25 6.75l-1.06 1.06M7.81 16.19l-1.06 1.06M20.25 12h-1.5M5.25 12h-1.5m14.25-5.25l-1.06-1.06M7.81 7.81l-1.06-1.06"></path></svg>`;
-            let insightText;
-            if (insightsCache.has(token.coinMint)) {
-                insightText = insightsCache.get(token.coinMint);
-            } else {
-                insightText = await fetchTokenInsight(token);
-                insightsCache.set(token.coinMint, insightText);
-            }
-            insightContent.textContent = `"${insightText}"`;
-            insightContent.classList.remove('hidden');
-            insightBtn.classList.add('hidden');
-        });
-        
         return card;
     }
 
-    // --- Initialization ---
+    // --- start polling ---
     fetchLiveTokens();
     setInterval(fetchLiveTokens, POLLING_INTERVAL_MS);
 });
-
