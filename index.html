@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SolanaWatchX | Powering the Next Generation of Solana Finance</title>
+    <title>SolanaWatchX | Live Token Feed & AI Insights</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -15,269 +15,136 @@
 </head>
 <body class="antialiased">
 
-    <!-- Header -->
-    <header class="fixed top-0 left-0 right-0 z-50 bg-opacity-80 backdrop-blur-md border-b border-gray-800/50">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <!-- Logo -->
-            <div class="flex items-center">
-                <img src="logo.svg" alt="SolanaWatchX Logo" class="h-10 w-10">
-                 <span class="ml-2 text-xl font-bold tracking-tighter text-white">
+    <!-- Sticky Header -->
+    <header class="sticky-header">
+        <div class="container mx-auto px-4 sm:px-6 py-3 flex justify-start items-center">
+            <a href="/" class="flex items-center flex-shrink-0">
+                <img src="/logo.svg" alt="SolanaWatchX Logo" class="h-8 w-8 sm:h-10 sm:w-10">
+                <span class="hidden sm:block ml-2 text-xl font-bold tracking-tighter text-white">
                     SolanaWatch<span class="gradient-text">X</span>
                 </span>
-            </div>
-            <div class="flex items-center space-x-4">
-                <a href="https://x.com/solanawatchx" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-white transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 16 16">
-                      <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"/>
-                    </svg>
-                </a>
-                <a href="https://t.me/+Rm2mc2VbI681MTRl" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-white transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.287 5.906c-.778.324-2.334.994-4.666 2.01-.378.15-.577.298-.595.442-.03.243.275.339.69.47l.175.055c.408.133.958.288 1.243.294.26.006.549-.1.868-.32 2.179-1.471 3.304-2.214 3.374-2.23.05-.012.12-.026.166.016.047.041.042.12.037.141-.03.129-1.227 1.241-1.846 1.817-.193.18-.33.307-.358.336a8 8 0 0 1-.188.186c-.38.366-.664.64.015 1.088.327.216.589.393.85.571.284.194.568.387.936.629.093.06.183.125.27.187.331.236.63.448.997.414.214-.02.435-.22.547-.82.265-1.417.786-4.486.906-5.751a1.4 1.4 0 0 0-.013-.315.34.34 0 0 0-.114-.217.53.53 0 0 0-.31-.093c-.3.005-.763.166-2.984 1.09"/>
-                    </svg>
-                </a>
-            </div>
+            </a>
         </div>
     </header>
 
-    <main class="pt-24">
+    <main>
         <!-- Hero Section -->
-        <section class="py-20 md:py-32 text-center">
+        <section class="text-center pt-24 pb-20 md:pb-32">
             <div class="container mx-auto px-6">
-                <h1 class="text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter text-white leading-tight mb-4">
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter text-white leading-tight mb-4 scroll-animate">
                     Powering the Next Generation of <span class="gradient-text">Solana Finance</span>.
                 </h1>
-                <p class="max-w-3xl mx-auto text-lg md:text-xl text-gray-400 mb-8">
+                <p class="max-w-3xl mx-auto text-lg text-gray-400 mb-8 scroll-animate">
                     SolanaWatchX is the definitive data protocol for the Solana ecosystem, providing AI-driven analytics, risk assessment, and market insights at scale. We are the data backbone for the funds, developers, and institutions building the future of Solana.
                 </p>
-                <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-4 scroll-animate">
                     <button disabled title="Launch Pending" class="w-full sm:w-auto px-8 py-4 font-semibold text-white rounded-lg bg-gray-700 opacity-50 cursor-not-allowed flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" /></svg>
                         <span>Buy $SWX</span>
                     </button>
                     <a href="https://discord.gg/Y63bbTHSzX" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-8 py-4 font-semibold text-white rounded-lg cta-button-secondary">
                         Join Community
                     </a>
                 </div>
-                 <p class="mt-4 text-sm text-gray-500">$SWX governs this protocol, ensuring decentralized, transparent, and reliable intelligence for all.</p>
             </div>
         </section>
 
+        <!-- Live Token Feed Section -->
+        <section class="container mx-auto max-w-4xl px-4 md:px-8 -mt-24">
+             <div class="feature-card rounded-xl p-4 sm:p-6">
+                <!-- Token Feed Header -->
+                <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-700/50">
+                    <div class="flex items-center space-x-3">
+                        <span class="relative flex h-3 w-3">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                        </span>
+                        <h2 class="text-xl font-bold text-white">Live Feed</h2>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="hidden md:flex items-center space-x-2 p-1 bg-gray-900/50 rounded-lg border border-gray-700">
+                            <button class="px-3 py-1 text-sm rounded-md text-gray-300 hover:bg-gray-700">All</button>
+                            <button class="px-3 py-1 text-sm rounded-md text-white bg-gray-700">New</button>
+                            <button class="px-3 py-1 text-sm rounded-md text-gray-300 hover:bg-gray-700">Vetted</button>
+                        </div>
+                        <a href="https://pump.fun" target="_blank" rel="noopener noreferrer" class="text-sm font-semibold text-white bg-green-500/20 hover:bg-green-500/40 px-3 py-2 rounded-lg transition-colors flex items-center space-x-2">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 13.5L12 18L7.5 13.5" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 6V18" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                            <span class="hidden sm:inline">Pump.fun</span>
+                        </a>
+                    </div>
+                </div>
+                <div id="status" class="text-center text-gray-400 py-20">
+                    <div class="flex items-center justify-center space-x-3">
+                        <svg class="animate-spin h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span>Connecting to live feed...</span>
+                    </div>
+                </div>
+                <div id="token-feed" class="space-y-3 max-h-[70vh] overflow-y-auto pr-2"></div>
+            </div>
+        </section>
+        
         <!-- Core Strengths Section -->
         <section class="py-16 md:py-24">
             <div class="container mx-auto px-6">
-                <div class="grid md:grid-cols-3 gap-8">
-                    <!-- Strength 1 -->
+                 <div class="grid md:grid-cols-3 gap-8">
                     <div class="feature-card p-8 rounded-xl scroll-animate">
-                        <div class="mb-4">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20V16"/></svg>
-                        </div>
-                        <h3 class="text-2xl font-bold text-white mb-2">Institutional-Grade Analytics</h3>
-                        <p class="text-gray-400">Our proprietary AI models deliver the deep market intelligence and risk analysis required by sophisticated market participants.</p>
+                        <h3 class="text-2xl font-bold text-white mb-2">Institutional-Grade Analytics</h3><p class="text-gray-400">Our proprietary AI models deliver the deep market intelligence and risk analysis required by sophisticated market participants.</p>
                     </div>
-                    <!-- Strength 2 -->
-                    <div class="feature-card p-8 rounded-xl scroll-animate delay-1">
-                        <div class="mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400"><path d="M12 12v-2"/><path d="M12 8V6"/><path d="m14.5 10.5 1.5-1.5"/><path d="m17 7-1.5-1.5"/><path d="M7 17v-2"/><path d="M7 11V9"/><path d="m9.5 13.5-1.5 1.5"/><path d="m7 17-1.5 1.5"/><path d="M2 12h2"/><path d="M6 12h2"/><path d="M16 12h2"/><path d="M20 12h2"/><path d="m9.5 10.5 1.5-1.5"/><path d="m7 7 1.5-1.5"/><path d="m14.5 13.5-1.5 1.5"/><path d="m17 17-1.5-1.5"/></svg>
-                        </div>
-                        <h3 class="text-2xl font-bold text-white mb-2">Scalable Infrastructure</h3>
-                        <p class="text-gray-400">Designed as a core protocol, our infrastructure is built to handle enterprise-level data queries and protocol integrations.</p>
+                    <div class="feature-card p-8 rounded-xl scroll-animate">
+                        <h3 class="text-2xl font-bold text-white mb-2">Scalable Infrastructure</h3><p class="text-gray-400">Designed as a core protocol, our infrastructure is built to handle enterprise-level data queries and protocol integrations.</p>
                     </div>
-                    <!-- Strength 3 -->
-                    <div class="feature-card p-8 rounded-xl scroll-animate delay-2">
-                         <div class="mb-4">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l-.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <div class="feature-card p-8 rounded-xl scroll-animate">
+                        <h3 class="text-2xl font-bold text-white mb-2">Decentralized Intelligence</h3><p class="text-gray-400">$SWX governs a decentralized data network, ensuring the integrity and reliability of our intelligence for other protocols to build upon.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Airdrop Section -->
+        <section class="py-16">
+            <div class="container mx-auto px-6">
+                <div class="max-w-3xl mx-auto text-center feature-card p-8 md:p-12 rounded-xl scroll-animate">
+                    <h2 class="text-3xl md:text-4xl font-bold tracking-tighter text-white mb-4">Secure Your <span class="gradient-text">Airdrop</span> Allocation</h2>
+                    <a href="/whitelist/" class="inline-block px-10 py-4 font-semibold text-white rounded-lg cta-button-primary my-4 text-lg">Join Airdrop!</a>
+                    <div>
+                        <div class="flex justify-between items-center text-sm text-gray-300 mb-2 px-1">
+                            <span>Whitelist Progress</span>
+                            <span id="whitelist-counter" class="font-semibold">0 / 500 Spots Filled</span>
                         </div>
-                        <h3 class="text-2xl font-bold text-white mb-2">Decentralized Intelligence</h3>
-                        <p class="text-gray-400">$SWX governs a decentralized data network, ensuring the integrity and reliability of our intelligence for other protocols to build upon.</p>
+                        <div class="w-full bg-gray-800 rounded-full h-3 border border-gray-700"><div id="progress-bar" class="bg-gradient-to-r from-purple-500 to-blue-500 h-full rounded-full" style="width: 0%"></div></div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Your Path to $SWX -->
-        <section class="py-16 md:py-24 bg-black bg-opacity-20">
+        <!-- Thanks & Share Section -->
+        <section class="pt-8 pb-16 text-center">
             <div class="container mx-auto px-6">
-                <div class="text-center max-w-2xl mx-auto">
-                    <h2 class="text-3xl md:text-4xl font-bold tracking-tighter text-white mb-4 scroll-animate">Your Path to <span class="gradient-text">$SWX</span></h2>
-                    <p class="text-lg text-gray-400 mb-12 scroll-animate delay-1">Become a part of the mission. Acquiring $SWX is your entry into the future data layer of Solana.</p>
-                </div>
-                <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
-                    <div class="path-step p-6 rounded-lg flex items-start space-x-4 scroll-animate">
-                        <div class="text-3xl font-black gradient-text">1</div>
-                        <div>
-                            <h4 class="font-bold text-white text-lg">Download a Wallet</h4>
-                            <p class="text-gray-400 text-sm">Get a secure Solana wallet like Phantom or Solflare.</p>
-                        </div>
-                    </div>
-                    <div class="path-step p-6 rounded-lg flex items-start space-x-4 scroll-animate delay-1">
-                        <div class="text-3xl font-black gradient-text">2</div>
-                        <div>
-                            <h4 class="font-bold text-white text-lg">Buy SOL</h4>
-                            <p class="text-gray-400 text-sm">Purchase Solana (SOL) from an exchange and send it to your wallet.</p>
-                        </div>
-                    </div>
-                    <div class="path-step p-6 rounded-lg flex items-start space-x-4 scroll-animate delay-2">
-                        <div class="text-3xl font-black gradient-text">3</div>
-                        <div>
-                            <h4 class="font-bold text-white text-lg">Swap on Pump.fun</h4>
-                            <p class="text-gray-400 text-sm">Connect your wallet to Pump.fun and swap your SOL for $SWX.</p>
-                        </div>
-                    </div>
-                    <div class="path-step p-6 rounded-lg flex items-start space-x-4 scroll-animate delay-3">
-                        <div class="text-3xl font-black gradient-text">4</div>
-                        <div>
-                            <h4 class="font-bold text-white text-lg">Join Our Ecosystem</h4>
-                            <p class="text-gray-400 text-sm">Follow us on X and Telegram for protocol updates and insights.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-         <!-- Why Choose Us -->
-        <section class="py-16 md:py-24">
-            <div class="container mx-auto px-6">
-                 <div class="text-center max-w-2xl mx-auto">
-                    <h2 class="text-3xl md:text-4xl font-bold tracking-tighter text-white mb-12 scroll-animate">Why Choose <span class="gradient-text">SolanaWatchX?</span></h2>
-                </div>
-                <div class="grid md:grid-cols-3 gap-8">
-                    <div class="why-card text-center p-8 rounded-xl scroll-animate">
-                        <h3 class="text-xl font-bold text-white mb-2">Unparalleled Market Edge</h3>
-                        <p class="text-gray-400">Access AI-driven insights before they become common knowledge, providing a critical advantage.</p>
-                    </div>
-                    <div class="why-card text-center p-8 rounded-xl scroll-animate delay-1">
-                        <h3 class="text-xl font-bold text-white mb-2">Verifiable Data Integrity</h3>
-                        <p class="text-gray-400">Our on-chain approach ensures that the data powering your decisions is trustworthy and transparent.</p>
-                    </div>
-                    <div class="why-card text-center p-8 rounded-xl scroll-animate delay-2">
-                        <h3 class="text-xl font-bold text-white mb-2">A Foundational Protocol</h3>
-                        <p class="text-gray-400">Investing in $SWX is a stake in a core piece of Solana's future infrastructure, not just a single application.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Roadmap Section -->
-        <section class="py-16 md:py-24">
-            <div class="container mx-auto px-6">
-                <div class="text-center max-w-2xl mx-auto">
-                    <h2 class="text-3xl md:text-4xl font-bold tracking-tighter text-white mb-4 scroll-animate">Our Roadmap: <span class="gradient-text">The Journey Ahead</span></h2>
-                    <p class="text-lg text-gray-400 mb-16 scroll-animate delay-1">We are building the data layer for the future of Solana. Here's our path to becoming the primary on-chain intelligence standard.</p>
-                </div>
-
-                <div class="relative max-w-2xl mx-auto">
-                    <!-- The vertical line -->
-                    <div class="absolute left-4 top-0 h-full w-0.5 bg-gray-700" aria-hidden="true"></div>
-
-                    <!-- Roadmap Item 1 -->
-                    <div class="relative pl-12 pb-12 scroll-animate">
-                        <div class="absolute left-0 top-1.5 w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
-                            <div class="w-4 h-4 bg-blue-400 rounded-full"></div>
-                        </div>
-                        <div class="roadmap-card p-6 rounded-lg">
-                            <p class="text-sm font-semibold text-blue-400 mb-1">Phase 1</p>
-                            <h4 class="font-bold text-white text-lg mb-2">Launch & Foundation</h4>
-                            <p class="text-gray-400 text-sm">Fair launch on Pump.fun, release the Alpha platform to prove our analytical model, and build our initial user base.</p>
-                        </div>
-                    </div>
-                    <!-- Roadmap Item 2 -->
-                    <div class="relative pl-12 pb-12 scroll-animate">
-                        <div class="absolute left-0 top-1.5 w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
-                            <div class="w-4 h-4 bg-gray-500 rounded-full"></div>
-                        </div>
-                         <div class="roadmap-card p-6 rounded-lg">
-                            <p class="text-sm font-semibold text-blue-400 mb-1">Phase 2</p>
-                            <h4 class="font-bold text-white text-lg mb-2">Platform & API Development</h4>
-                            <p class="text-gray-400 text-sm">Enhance our AI models and begin development of our private API for early-stage partners.</p>
-                        </div>
-                    </div>
-                    <!-- Roadmap Item 3 -->
-                    <div class="relative pl-12 pb-12 scroll-animate">
-                        <div class="absolute left-0 top-1.5 w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
-                           <div class="w-4 h-4 bg-gray-500 rounded-full"></div>
-                        </div>
-                         <div class="roadmap-card p-6 rounded-lg">
-                            <p class="text-sm font-semibold text-blue-400 mb-1">Phase 3</p>
-                            <h4 class="font-bold text-white text-lg mb-2">Testnet & Institutional Onboarding</h4>
-                            <p class="text-gray-400 text-sm">Launch the protocol testnet. Onboard a select group of funds and developers to beta test our API and data feeds.</p>
-                        </div>
-                    </div>
-                    <!-- Roadmap Item 4 -->
-                    <div class="relative pl-12 scroll-animate">
-                        <div class="absolute left-0 top-1.5 w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
-                            <div class="w-4 h-4 bg-gray-500 rounded-full"></div>
-                        </div>
-                        <div class="roadmap-card p-6 rounded-lg">
-                            <p class="text-sm font-semibold text-blue-400 mb-1">Phase 4</p>
-                            <h4 class="font-bold text-white text-lg mb-2">Mainnet Protocol & Enterprise API</h4>
-                            <p class="text-gray-400 text-sm">Launch the SolanaWatchX mainnet protocol. Release our enterprise-grade API for funds, dApps, and institutions. Solidify $SWX as the governance token for the primary on-chain intelligence standard on Solana.</p>
-                        </div>
-                    </div>
+                <h3 class="text-2xl md:text-3xl font-bold text-white mb-6 scroll-animate">
+                    Thanks for joining the <span class="gradient-text">SolanaWatchX Protocol!</span>
+                </h3>
+                <div class="flex justify-center items-center space-x-4 scroll-animate">
+                    <p class="text-lg text-gray-300 font-semibold">Share the Vision</p>
+                    <a href="https://twitter.com/intent/tweet?text=The%20Future%20of%20Solana%20universe%20the%20%40Solanawatchx!%20Join%20these%20rising%20community!%20%F0%9F%9A%80" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-white transition-transform hover:scale-110 duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="currentColor" viewBox="0 0 16 16">
+                          <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"/>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Airdrop Section -->
-    <section class="py-16">
-        <div class="container mx-auto px-6">
-            <div class="max-w-3xl mx-auto text-center feature-card p-8 md:p-12 rounded-xl scroll-animate">
-                <h2 class="text-3xl md:text-4xl font-bold tracking-tighter text-white mb-4">
-                    Secure Your <span class="gradient-text">Airdrop</span> Allocation
-                </h2>
-                <p class="text-gray-400 mb-8 max-w-lg mx-auto">
-                    Get whitelisted for SolanaWatchX's upcoming airdrop and secure your spot in the future of Solana finance.
-                </p>
-                
-                <a href="/whitelist/" class="inline-block px-10 py-4 font-semibold text-white rounded-lg cta-button-primary mb-8 text-lg transform hover:-translate-y-1 transition-transform duration-300">
-                    Join Airdrop!
-                </a>
-
-                <div>
-                    <div class="flex justify-between items-center text-sm text-gray-300 mb-2 px-1">
-                        <span>Whitelist Progress</span>
-                        <span id="whitelist-counter" class="font-semibold">0 / 500 Spots Filled</span>
-                    </div>
-                    <div class="w-full bg-gray-800 rounded-full h-3 border border-gray-700">
-                        <div id="progress-bar" class="bg-gradient-to-r from-purple-500 to-blue-500 h-full rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Thanks & Share Section -->
-    <section id="share-section" class="pt-8 pb-16 text-center">
-        <div class="container mx-auto px-6">
-            <h3 class="text-2xl md:text-3xl font-bold text-white mb-6 scroll-animate">
-                Thanks for joining the <span class="gradient-text">SolanaWatchX Protocol!</span>
-            </h3>
-            <div class="flex justify-center items-center space-x-4 scroll-animate delay-1">
-                <p class="text-lg text-gray-300 font-semibold">Share the Vision</p>
-                <a href="https://twitter.com/intent/tweet?text=The%20Future%20of%20Solana%20universe%20the%20%40Solanawatchx!%20Join%20these%20rising%20community!%20%F0%9F%9A%80" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-white transition-transform hover:scale-110 duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="currentColor" viewBox="0 0 16 16">
-                      <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"/>
-                    </svg>
-                </a>
-            </div>
-        </div>
-    </section>
-
     <!-- Footer -->
-    <footer class="border-t border-gray-800/50">
-        <div class="container mx-auto px-6 py-6 text-center">
-            <p class="text-sm text-gray-500">&copy; 2025 SolanaWatchX Protocol. All Rights Reserved.</p>
+    <footer class="border-t border-gray-800/50 mt-16">
+        <div class="container mx-auto px-6 py-6 text-center text-sm text-gray-500">
+            <p>&copy; 2025 SolanaWatchX Protocol. All Rights Reserved.</p>
         </div>
     </footer>
 
-    <!-- Supabase Client -->
+    <!-- Supabase & App Script -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Custom JavaScript -->
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
 </body>
 </html>
-
 
