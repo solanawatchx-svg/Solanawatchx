@@ -69,14 +69,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function fetchLiveTokens() {
         try {
-            const { data, error } = await supabaseClient
-                .from('tokens')
-                .select('*')
-                .order('creationTime', { ascending: false })
-                .limit(2000);
+            statusElement.style.display = 'block';
+            statusElement.textContent = 'Fetching live tokens...';
+            
+            const response = await fetch('http://34.204.51.121:3000/live-tokens');
+            if (!response.ok) throw new Error('Failed to fetch live tokens');
 
-            if (error) throw error;
+            const { tokens: data } = await response.json();
             statusElement.style.display = 'none';
+
 
             const newTokens = data.filter(t => !displayedTokens.has(t.coinMint));
             if (newTokens.length === 0) return;
