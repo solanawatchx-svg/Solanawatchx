@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     // ===============================
-    // --- SUPABASE CONFIG ---
+    // --- SUPABASE CONFIG (only for whitelist) ---
     // ===============================
     const SUPABASE_URL = 'https://dyferdlczmzxurlfrjnd.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5ZmVyZGxjem16eHVybGZyam5kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjYxMDMsImV4cCI6MjA3NDIwMjEwM30.LTXkmO2MkqYqg4g7Bv7H8u1rgQnDnQ43FDaT7DzFAt8';
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ===============================
-    // --- LIVE TOKEN FEED ---
+    // --- LIVE TOKEN FEED (AWS) ---
     // ===============================
     const POLLING_INTERVAL_MS = 4000;
     const displayedTokens = new Set();
@@ -71,15 +71,15 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             statusElement.style.display = 'block';
             statusElement.textContent = 'Fetching live tokens...';
-            
+
+            // 🔥 Fetch directly from AWS live-feed.js
             const response = await fetch('http://34.204.51.121:3000/live-tokens');
             if (!response.ok) throw new Error('Failed to fetch live tokens');
 
-            const { tokens: data } = await response.json();
+            const { tokens } = await response.json();
             statusElement.style.display = 'none';
 
-
-            const newTokens = data.filter(t => !displayedTokens.has(t.coinMint));
+            const newTokens = tokens.filter(t => !displayedTokens.has(t.coinMint));
             if (newTokens.length === 0) return;
 
             newTokens.forEach(t => displayedTokens.add(t.coinMint));
