@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
             statusElement.textContent = 'Fetching live tokens...';
 
             // 🔥 Fetch directly from AWS live-feed.js
-            const response = await fetch('https://34.204.51.121:3000/live-tokens');
+            const response = await fetch('https://api.solanawatchx.site/live-tokens');
             if (!response.ok) throw new Error('Failed to fetch live tokens');
 
             const { tokens } = await response.json();
