@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", () => {
     // ===============================
     // --- SUPABASE CONFIG (only for whitelist) ---
@@ -162,16 +161,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const dexLink = `https://dexscreener.com/solana/${token.coinMint}`;
 
         card.innerHTML = `
-            <div class="grid grid-cols-12 gap-2 sm:gap-3 items-center">
-                <div class="col-span-2">
+            <div class="grid grid-cols-12 gap-2 items-center">
+                <div class="col-span-2 sm:col-span-1 flex-shrink-0">
                     <img src="${token.imageUrl}" alt="${token.ticker}" class="w-10 h-10 rounded-full object-cover">
                 </div>
-                <div class="col-span-7 sm:col-span-5 flex flex-col justify-center">
+                <div class="col-span-4 sm:col-span-5 flex flex-col justify-center overflow-hidden">
                     <div class="flex items-center space-x-2">
-                        <p class="font-bold text-white truncate">${token.name}</p>
-                        <div class="flex items-center space-x-1.5">${socialsHTML}</div>
+                        <p class="font-bold text-white truncate text-sm sm:text-base">${token.name}</p>
+                        <div class="flex items-center space-x-1.5 flex-shrink-0">${socialsHTML}</div>
                     </div>
-                    <div class="flex items-center space-x-2 text-xs text-gray-400 flex-wrap">
+                    <div class="flex items-center space-x-1 sm:space-x-2 text-[10px] sm:text-xs text-gray-400 flex-wrap">
                         <span>$${token.ticker}</span>
                         <span class="text-gray-500">•</span>
                         <span>${formatAge(token.creationTime)}</span>
@@ -181,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                     </div>
                 </div>
-                <div class="hidden sm:col-span-3 sm:grid grid-cols-2 gap-2 text-xs text-center">
+                <div class="col-span-3 grid grid-cols-2 gap-1 text-[9px] sm:text-xs text-center">
                     <div><div class="text-gray-500">MC</div><div class="font-semibold text-white">${formatNum(token.marketCap)}</div></div>
                     <div><div class="text-gray-500">Vol</div><div class="font-semibold text-white">${formatNum(token.volume)}</div></div>
                 </div>
