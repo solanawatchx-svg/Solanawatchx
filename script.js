@@ -48,6 +48,47 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ===============================
+    // --- IMAGE FALLBACK FIX ---
+    // ===============================
+    function resolveImageUrl(url) {
+        if (!url) return "https://via.placeholder.com/86";
+
+        // Cloudflare (pump.fun / imagedelivery)
+        if (url.includes("imagedelivery.net") || url.includes("images.pump.fun")) {
+            return url.replace(/\/coin-image\/([^/?]+).*/, "/coin-image/$1/86x86?alpha=true");
+        }
+
+        // IPFS
+        if (url.includes("ipfs://")) {
+            return url.replace("ipfs://", "https://ipfs.io/ipfs/");
+        }
+        if (url.includes("ipfs.io/ipfs/")) {
+            return url;
+        }
+
+        return url;
+    }
+
+    function loadImageWithFallback(imgElement, primaryUrl, coinMint) {
+        imgElement.src = resolveImageUrl(primaryUrl);
+
+        imgElement.onerror = function () {
+            console.warn(`⚠️ Image failed for ${coinMint}, trying IPFS fallback...`);
+            try {
+                const urlObj = new URL(primaryUrl);
+                const ipfsHash = urlObj.searchParams.get("ipfs");
+                if (ipfsHash) {
+                    imgElement.src = `https://ipfs.io/ipfs/${ipfsHash}`;
+                    return;
+                }
+            } catch (e) {
+                console.error("Error parsing URL:", e);
+            }
+            imgElement.src = "https://via.placeholder.com/86";
+        };
+    }
+
+    // ===============================
     // --- LIVE TOKEN FEED (AWS & AI) ---
     // ===============================
     const POLLING_INTERVAL_MS = 4000;
@@ -98,13 +139,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function fetchLiveTokens() {
         try {
-            // 🔥 Fetch directly from AWS live-feed.js
             const response = await fetch('https://api.solanawatchx.site/live-tokens');
             if (!response.ok) throw new Error('Failed to fetch live tokens');
 
             const { tokens } = await response.json();
             
-            // Hide status indicator permanently after first successful fetch
             if (isInitialLoad) {
                 statusElement.style.display = 'none';
                 isInitialLoad = false;
@@ -115,9 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             newTokens.forEach(t => displayedTokens.add(t.coinMint));
             
-             // trim feed if > 2000 to prevent browser overload
             if (feedContainer.children.length > 2000) {
-                // A simple trim, more advanced virtualization could be used for larger feeds
                 while (feedContainer.children.length > 1800) {
                     const oldMint = feedContainer.lastChild.dataset.mint;
                     if(oldMint) displayedTokens.delete(oldMint);
@@ -132,7 +169,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } catch (err) {
             console.error("❌ Fetch Error:", err);
-            // Only show error message on initial load failure
             if(isInitialLoad){
                 statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
             }
@@ -142,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function createTokenElement(token) {
         const card = document.createElement('div');
         card.className = 'token-card rounded-lg p-3 sm:p-4';
-        card.dataset.mint = token.coinMint; // Add for easier removal later
+        card.dataset.mint = token.coinMint;
 
         const socialIcons = {
             twitter: `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.71v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path></svg>`,
@@ -163,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
         card.innerHTML = `
             <div class="grid grid-cols-12 gap-3 items-center">
                 <div class="col-span-2 sm:col-span-1">
-                    <img src="${token.imageUrl}" alt="${token.ticker}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover">
+                    <img id="img-${token.coinMint}" alt="${token.ticker}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover">
                 </div>
                 <div class="col-span-5 sm:col-span-5 flex flex-col justify-center">
                     <div class="flex items-center space-x-2">
@@ -192,6 +228,10 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div class="insight-content hidden mt-3 p-3 bg-gray-900/50 rounded text-sm text-purple-300 italic"></div>
         `;
+
+        // Load image with fallback
+        const imgElement = card.querySelector(`#img-${token.coinMint}`);
+        loadImageWithFallback(imgElement, token.imageUrl, token.coinMint);
 
         const insightBtn = card.querySelector('.get-insight-btn');
         const insightContent = card.querySelector('.insight-content');
@@ -229,4 +269,3 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchLiveTokens();
     setInterval(fetchLiveTokens, POLLING_INTERVAL_MS);
 });
-
