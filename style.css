@@ -26,7 +26,7 @@ body {
     background: #10121a;
     border: 1px solid #2a2d3e;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    zoom: 65%;
+    zoom: 0%;
 }
 .token-card:hover {
     border-color: #4390F1;
@@ -104,3 +104,8 @@ body {
 
 .insight-loading-spinner { animation: spin 1s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+@media (max-width: 767px) {
+  .token-card {
+    zoom: 65%; /* For mobile devices */
+  }
