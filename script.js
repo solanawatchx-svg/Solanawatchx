@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function createTokenElement(token) {
         const card = document.createElement('div');
-        card.className = 'token-card rounded-lg p-2 sm:p-3';
+        card.className = 'token-card rounded-lg p-3 sm:p-4';
         card.dataset.mint = token.coinMint; // Add for easier removal later
 
         const socialIcons = {
@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
         card.innerHTML = `
             <div class="grid grid-cols-12 gap-3 items-center">
                 <div class="col-span-2 sm:col-span-1">
-                    <img src="${token.imageUrl}" alt="${token.ticker}" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover">
+                    <img src="${token.imageUrl}" alt="${token.ticker}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover">
                 </div>
                 <div class="col-span-10 sm:col-span-5 flex flex-col justify-center">
                     <div class="flex items-center space-x-2">
