@@ -61,9 +61,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let isInitialLoad = true;
 
     const formatNum = (n) =>
-        n >= 1e6 ? `$${(n/1e6).toFixed(1)}M`
+        n >= 1e6 ? `$${(n/1e6).toFixed(2)}M`
         : n >= 1e3 ? `$${(n/1e3).toFixed(1)}K`
-        : `$${Math.round(n)}`;
+        : `$${n.toFixed(0)}`;
 
     const formatAge = (ms) => {
         const minutes = Math.floor((Date.now() - ms) / 60000);
@@ -104,6 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const { tokens } = await response.json();
             
+            // Hide status indicator permanently after first successful fetch
             if (isInitialLoad) {
                 statusElement.style.display = 'none';
                 isInitialLoad = false;
@@ -114,7 +115,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             newTokens.forEach(t => displayedTokens.add(t.coinMint));
             
+             // trim feed if > 2000 to prevent browser overload
             if (feedContainer.children.length > 2000) {
+                // A simple trim, more advanced virtualization could be used for larger feeds
                 while (feedContainer.children.length > 1800) {
                     const oldMint = feedContainer.lastChild.dataset.mint;
                     if(oldMint) displayedTokens.delete(oldMint);
@@ -129,6 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } catch (err) {
             console.error("❌ Fetch Error:", err);
+            // Only show error message on initial load failure
             if(isInitialLoad){
                 statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
             }
@@ -138,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function createTokenElement(token) {
         const card = document.createElement('div');
         card.className = 'token-card rounded-lg p-3 sm:p-4';
-        card.dataset.mint = token.coinMint;
+        card.dataset.mint = token.coinMint; // Add for easier removal later
 
         const socialIcons = {
             twitter: `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.71v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path></svg>`,
@@ -157,40 +161,36 @@ document.addEventListener("DOMContentLoaded", () => {
         const dexLink = `https://dexscreener.com/solana/${token.coinMint}`;
 
         card.innerHTML = `
-            <div class="flex flex-col">
-                <div class="flex items-start justify-between">
-                    <div class="flex items-start space-x-3">
-                        <img src="${token.imageUrl}" alt="${token.ticker}" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
-                        <div class="flex flex-col">
-                            <div class="flex items-center space-x-2">
-                                <p class="font-bold text-white truncate text-sm sm:text-base">${token.name}</p>
-                                <div class="flex items-center space-x-1.5">${socialsHTML}</div>
-                            </div>
-                            <div class="flex items-center space-x-2 text-xs text-gray-400 flex-wrap">
-                                <span>$${token.ticker}</span>
-                                <span class="text-gray-500">•</span>
-                                <span>${formatAge(token.creationTime)}</span>
-                            </div>
+            <div class="grid grid-cols-12 gap-3 items-center">
+                <div class="col-span-2 sm:col-span-1">
+                    <img src="${token.imageUrl}" alt="${token.ticker}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover">
+                </div>
+                <div class="col-span-10 sm:col-span-5 flex flex-col justify-center">
+                    <div class="flex items-center space-x-2">
+                        <p class="font-bold text-white truncate">${token.name}</p>
+                        <div class="flex items-center space-x-1.5">${socialsHTML}</div>
+                    </div>
+                    <div class="flex items-center space-x-2 text-xs text-gray-400 flex-wrap">
+                        <span>$${token.ticker}</span>
+                        <span class="text-gray-500">•</span>
+                        <span>${formatAge(token.creationTime)}</span>
+                        <div class="copy-address-container flex items-center space-x-1 cursor-pointer hover:text-white" title="Copy Address">
+                            <span class="font-mono token-address">${token.coinMint.substring(0, 4)}...${token.coinMint.substring(token.coinMint.length - 4)}</span>
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
-                        <a href="${pumpLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-1.5 sm:p-2 rounded-md" title="Buy on Pump.fun"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 13.5L12 18L7.5 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
-                        <a href="${dexLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-1.5 sm:p-2 rounded-md" title="View on DexScreener"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg></a>
-                        <button class="get-insight-btn ai-btn text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-md" title="Get AI Insight">AI</button>
-                    </div>
                 </div>
-                <div class="flex justify-between items-center mt-2 pl-12">
-                    <div class="copy-address-container flex items-center space-x-1 cursor-pointer text-gray-500 hover:text-white" title="Copy Address">
-                        <span class="font-mono text-[10px] token-address">${token.coinMint.substring(0, 4)}...${token.coinMint.substring(token.coinMint.length - 4)}</span>
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                    </div>
-                    <div class="flex space-x-4 text-xs text-center">
-                        <div><div class="text-gray-500 text-[10px]">MC</div><div class="font-semibold text-white">${formatNum(token.marketCap)}</div></div>
-                        <div><div class="text-gray-500 text-[10px]">Vol</div><div class="font-semibold text-white">${formatNum(token.volume)}</div></div>
-                    </div>
+                <div class="hidden sm:col-span-3 sm:grid grid-cols-2 gap-2 text-xs text-center">
+                    <div><div class="text-gray-500">MC</div><div class="font-semibold text-white">${formatNum(token.marketCap)}</div></div>
+                    <div><div class="text-gray-500">Vol</div><div class="font-semibold text-white">${formatNum(token.volume)}</div></div>
                 </div>
-                <div class="insight-content hidden mt-3 p-3 bg-gray-900/50 rounded text-sm text-purple-300 italic"></div>
+                <div class="col-span-12 sm:col-span-3 flex items-center justify-end space-x-2">
+                   <a href="${pumpLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-2 rounded-md" title="Buy on Pump.fun"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 13.5L12 18L7.5 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+                   <a href="${dexLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-2 rounded-md" title="View on DexScreener"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg></a>
+                   <button class="get-insight-btn ai-btn text-xs font-bold px-3 py-1.5 rounded-md" title="Get AI Insight">AI</button>
+                </div>
             </div>
+            <div class="insight-content hidden mt-3 p-3 bg-gray-900/50 rounded text-sm text-purple-300 italic"></div>
         `;
 
         const insightBtn = card.querySelector('.get-insight-btn');
