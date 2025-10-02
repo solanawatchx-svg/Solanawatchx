@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", () => {
     // ===============================
     // --- SUPABASE CONFIG (only for whitelist) ---
@@ -161,11 +162,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const dexLink = `https://dexscreener.com/solana/${token.coinMint}`;
 
         card.innerHTML = `
-            <div class="grid grid-cols-12 gap-3 items-center">
-                <div class="col-span-2 sm:col-span-1">
-                    <img src="${token.imageUrl}" alt="${token.ticker}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover">
+            <div class="grid grid-cols-12 gap-2 sm:gap-3 items-center">
+                <div class="col-span-2">
+                    <img src="${token.imageUrl}" alt="${token.ticker}" class="w-10 h-10 rounded-full object-cover">
                 </div>
-                <div class="col-span-10 sm:col-span-5 flex flex-col justify-center">
+                <div class="col-span-7 sm:col-span-5 flex flex-col justify-center">
                     <div class="flex items-center space-x-2">
                         <p class="font-bold text-white truncate">${token.name}</p>
                         <div class="flex items-center space-x-1.5">${socialsHTML}</div>
@@ -184,10 +185,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div><div class="text-gray-500">MC</div><div class="font-semibold text-white">${formatNum(token.marketCap)}</div></div>
                     <div><div class="text-gray-500">Vol</div><div class="font-semibold text-white">${formatNum(token.volume)}</div></div>
                 </div>
-                <div class="col-span-12 sm:col-span-3 flex items-center justify-end space-x-2">
-                   <a href="${pumpLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-2 rounded-md" title="Buy on Pump.fun"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 13.5L12 18L7.5 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
-                   <a href="${dexLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-2 rounded-md" title="View on DexScreener"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg></a>
-                   <button class="get-insight-btn ai-btn text-xs font-bold px-3 py-1.5 rounded-md" title="Get AI Insight">AI</button>
+                <div class="col-span-3 flex items-center justify-end space-x-1 sm:space-x-2">
+                   <a href="${pumpLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-1.5 sm:p-2 rounded-md" title="Buy on Pump.fun"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 13.5L12 18L7.5 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+                   <a href="${dexLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-1.5 sm:p-2 rounded-md" title="View on DexScreener"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg></a>
+                   <button class="get-insight-btn ai-btn text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-md" title="Get AI Insight">AI</button>
                 </div>
             </div>
             <div class="insight-content hidden mt-3 p-3 bg-gray-900/50 rounded text-sm text-purple-300 italic"></div>
