@@ -76,7 +76,7 @@ body {
     background-color: rgba(67, 144, 241, 0.1);
 }
 .cta-button-primary {
-     background: linear-gradient(90deg, #A55EE3, #4390F1);
+    background: linear-gradient(90deg, #A55EE3, #4390F1);
 }
 .cta-button-primary:hover {
     transform: translateY(-2px);
@@ -103,15 +103,3 @@ body {
 
 .insight-loading-spinner { animation: spin 1s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-/* === CODE ADDED FOR FORCING DESKTOP VIEW ON MOBILE === */
-@media (max-width: 767px) {
-  .force-desktop-scroll {
-    overflow-x: auto; /* Enables horizontal scrolling */
-    -webkit-overflow-scrolling: touch; /* Improves scroll feel on iOS */
-  }
-
-  .force-desktop-scroll > .feature-card {
-    min-width: 768px; /* Forces the card to be at least 768px wide */
-  }
-}
