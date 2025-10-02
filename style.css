@@ -1,96 +1,96 @@
 body {
-    font-family: 'Inter', sans-serif;
-    background-color: #050711;
-    color: #E0E0E0;
+    font-family: 'Inter', sans-serif;
+    background-color: #050711;
+    color: #E0E0E0;
 }
 
 .gradient-text {
-    background: linear-gradient(90deg, #A55EE3, #4390F1);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
+    background: linear-gradient(90deg, #A55EE3, #4390F1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
 }
 
 .sticky-header {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background: rgba(5, 7, 17, 0.8);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(5, 7, 17, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .token-card {
-    background: #10121a;
-    border: 1px solid #2a2d3e;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background: #10121a;
+    border: 1px solid #2a2d3e;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 .token-card:hover {
-    border-color: #4390F1;
-    box-shadow: 0 0 15px rgba(67, 144, 241, 0.2);
+    border-color: #4390F1;
+    box-shadow: 0 0 15px rgba(67, 144, 241, 0.2);
 }
 
 .action-btn {
-    background-color: #1c1e2b;
-    border: 1px solid #3c3f58;
-    transition: all 0.2s ease;
+    background-color: #1c1e2b;
+    border: 1px solid #3c3f58;
+    transition: all 0.2s ease;
 }
 .action-btn:hover {
-    background-color: #2a2d3e;
-    border-color: #4390F1;
-    color: #fff;
+    background-color: #2a2d3e;
+    border-color: #4390F1;
+    color: #fff;
 }
 
 .ai-btn {
-    background: rgba(165, 94, 227, 0.15);
-    border: 1px solid rgba(165, 94, 227, 0.5);
-    color: #c471ed;
-    transition: all 0.3s ease;
+    background: rgba(165, 94, 227, 0.15);
+    border: 1px solid rgba(165, 94, 227, 0.5);
+    color: #c471ed;
+    transition: all 0.3s ease;
 }
 .ai-btn:hover {
-    background: rgba(165, 94, 227, 0.3);
-    border-color: #A55EE3;
-    color: #fff;
-    box-shadow: 0 0 10px rgba(165, 94, 227, 0.5);
+    background: rgba(165, 94, 227, 0.3);
+    border-color: #A55EE3;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(165, 94, 227, 0.5);
 }
 .ai-btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
+    cursor: not-allowed;
+    opacity: 0.5;
 }
 
 .feature-card, .roadmap-card, .path-step, .why-card {
-    background: rgba(10, 14, 31, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: rgba(10, 14, 31, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .cta-button-secondary {
-    background-color: transparent;
-    border: 1px solid #4390F1;
-    transition: all 0.3s ease;
+    background-color: transparent;
+    border: 1px solid #4390F1;
+    transition: all 0.3s ease;
 }
 .cta-button-secondary:hover {
-    background-color: rgba(67, 144, 241, 0.1);
+    background-color: rgba(67, 144, 241, 0.1);
 }
 .cta-button-primary {
-     background: linear-gradient(90deg, #A55EE3, #4390F1);
+     background: linear-gradient(90deg, #A55EE3, #4390F1);
 }
 .cta-button-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0px 8px 25px rgba(165, 94, 227, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0px 8px 25px rgba(165, 94, 227, 0.3);
 }
 
 .scroll-animate {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
 }
 .scroll-animate.is-visible {
-    opacity: 1;
-    transform: translateY(0);
+    opacity: 1;
+    transform: translateY(0);
 }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -103,15 +103,3 @@ body {
 
 .insight-loading-spinner { animation: spin 1s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-/* === CODE ADDED FOR FORCING DESKTOP VIEW ON MOBILE === */
-@media (max-width: 256px) {
-  .force-desktop-scroll {
-    overflow-x: auto; /* Enables horizontal scrolling */
-    -webkit-overflow-scrolling: touch; /* Improves scroll feel on iOS */
-  }
-
-  .force-desktop-scroll > .feature-card {
-    min-width: 256px; /* Forces the card to be at least 768px wide */
-  }
-}
