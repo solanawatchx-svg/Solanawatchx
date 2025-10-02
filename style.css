@@ -105,13 +105,13 @@ body {
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 /* === CODE ADDED FOR FORCING DESKTOP VIEW ON MOBILE === */
-@media (max-width: 384px) {
+@media (max-width: 256px) {
   .force-desktop-scroll {
     overflow-x: auto; /* Enables horizontal scrolling */
     -webkit-overflow-scrolling: touch; /* Improves scroll feel on iOS */
   }
 
   .force-desktop-scroll > .feature-card {
-    min-width: 384px; /* Forces the card to be at least 768px wide */
+    min-width: 256px; /* Forces the card to be at least 768px wide */
   }
 }
