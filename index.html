@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SolanaWatchX | Live Token Feed & AI Insights</title>
-    <link rel="stylesheet" href="style.css">
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="antialiased">
 
@@ -26,7 +29,7 @@
 
     <main>
         <!-- Hero Section -->
-        <section class="text-center pt-24 pb-20 md:pt-32">
+        <section class="text-center pt-24 pb-20 md:pb-32">
             <div class="container mx-auto px-6">
                 <h1 class="text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter text-white leading-tight mb-4 scroll-animate">
                     Powering the Next Generation of <span class="gradient-text">Solana Finance</span>.
@@ -47,7 +50,7 @@
         </section>
 
         <!-- Live Token Feed Section -->
-        <section class="container mx-auto max-w-4xl px-4 md:px-8">
+        <section class="container mx-auto max-w-4xl px-4 md:px-8 mt-16">
              <div class="feature-card rounded-xl p-4 sm:p-6">
                 <!-- Token Feed Header -->
                 <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-700/50">
@@ -113,8 +116,9 @@
                 </div>
             </div>
         </section>
+
         <!-- Thanks & Share Section -->
-        <section class="pt-8 pb-16 text-center" id="share-section">
+        <section class="pt-8 pb-16 text-center">
             <div class="container mx-auto px-6">
                 <h3 class="text-2xl md:text-3xl font-bold text-white mb-6 scroll-animate">
                     Thanks for joining the <span class="gradient-text">SolanaWatchX Protocol!</span>
@@ -122,7 +126,7 @@
                 <div class="flex justify-center items-center space-x-4 scroll-animate">
                     <p class="text-lg text-gray-300 font-semibold">Share the Vision</p>
                     <a href="https://twitter.com/intent/tweet?text=The%20Future%20of%20Solana%20universe%20the%20%40Solanawatchx!%20Join%20these%20rising%20community!%20%F0%9F%9A%80" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-white transition-transform hover:scale-110 duration-300">
-                        <svg class="h-7 w-7" fill="currentColor" viewBox="0 0 16 16">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="currentColor" viewBox="0 0 16 16">
                           <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"/>
                         </svg>
                     </a>
@@ -138,9 +142,11 @@
         </div>
     </footer>
 
+    <!-- Supabase & App Script -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
 </body>
 </html>
+
 
 
