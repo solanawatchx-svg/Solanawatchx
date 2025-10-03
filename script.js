@@ -52,20 +52,26 @@ document.addEventListener("DOMContentLoaded", () => {
     // ===============================
     function resolveImageUrl(url) {
         if (!url) return "https://via.placeholder.com/86";
+
+        // Cloudflare (pump.fun / imagedelivery)
         if (url.includes("imagedelivery.net") || url.includes("images.pump.fun")) {
             return url.replace(/\/coin-image\/([^/?]+).*/, "/coin-image/$1/86x86?alpha=true");
         }
+
+        // IPFS
         if (url.includes("ipfs://")) {
             return url.replace("ipfs://", "https://ipfs.io/ipfs/");
         }
         if (url.includes("ipfs.io/ipfs/")) {
             return url;
         }
+
         return url;
     }
 
     function loadImageWithFallback(imgElement, primaryUrl, coinMint) {
         imgElement.src = resolveImageUrl(primaryUrl);
+
         imgElement.onerror = function () {
             console.warn(`⚠️ Image failed for ${coinMint}, trying IPFS fallback...`);
             try {
@@ -81,44 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
             imgElement.src = "https://via.placeholder.com/86";
         };
     }
-
-    // ===============================
-    // --- NEWS PANEL (from backend) ---
-    // ===============================
-    async function fetchNews() {
-        const container = document.getElementById("news-panel");
-        if (!container) return;
-
-        container.innerHTML = `<div class="text-gray-400 py-10 text-center">Loading news...</div>`;
-        try {
-            const response = await fetch("https://api.solanawatchx.site/news");
-            if (!response.ok) throw new Error("Failed to fetch news");
-            const news = await response.json();
-
-            container.innerHTML = "";
-            if (!news.length) {
-                container.innerHTML = `<p class="text-gray-400 text-center">No news available.</p>`;
-                return;
-            }
-
-            news.forEach(item => {
-                const card = document.createElement("a");
-                card.href = item.url;
-                card.target = "_blank";
-                card.rel = "noopener noreferrer";
-                card.className = "block bg-gray-900/50 hover:bg-gray-800 p-4 rounded-lg border border-gray-700 transition";
-                card.innerHTML = `
-                    <h3 class="text-white font-bold mb-2">${item.title}</h3>
-                    <p class="text-gray-400 text-sm">${item.source || "Unknown source"}</p>
-                `;
-                container.appendChild(card);
-            });
-        } catch (err) {
-            console.error("❌ News Fetch Error:", err);
-            container.innerHTML = `<p class="text-red-400 text-center">Failed to load news.</p>`;
-        }
-    }
-    fetchNews();
 
     // ===============================
     // --- LIVE TOKEN FEED (AWS & AI) ---
@@ -145,71 +113,238 @@ document.addEventListener("DOMContentLoaded", () => {
             : `${Math.floor(minutes/60)}h ${minutes%60}m ago`;
     };
 
-    // --- token insight fetch ---
     async function fetchTokenInsight(token) {
-        if (insightsCache.has(token.symbol)) {
-            return insightsCache.get(token.symbol);
-        }
+        const systemPrompt = "You are a witty, slightly cynical crypto market analyst. Provide a brief, one-sentence speculative analysis for a new token from pump.fun. The analysis should be creative and mention potential risks or upsides in a fun, meme-worthy manner. Do not give financial advice. Keep it under 20 words.";
+        const userQuery = `Analyze this token: Name: ${token.name}, Ticker: $${token.ticker}, Market Cap: ${formatNum(token.marketCap)}`;
+        const payload = {
+            contents: [{ parts: [{ text: userQuery }] }],
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+        };
         try {
-            const prompt = `Give a 1-line fun & catchy summary for Solana token "${token.symbol}" launched ${formatAge(token.launchUnixTime * 1000)} with volume ${formatNum(token.volume)}.`;
             const response = await fetch(GEMINI_API_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
-            const data = await response.json();
-            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-            insightsCache.set(token.symbol, text);
-            return text;
-        } catch (e) {
-            console.error("Insight fetch error", e);
-            return "";
+            if (!response.ok) throw new Error(`API call failed with status: ${response.status}`);
+            const result = await response.json();
+            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) return text.trim();
+            throw new Error("Invalid response structure from Gemini API.");
+        } catch (error) {
+            console.error("Gemini API Error:", error);
+            return "Couldn't get an insight. The AI might be sleeping.";
         }
     }
 
-    // --- live tokens fetch ---
     async function fetchLiveTokens() {
         try {
-            const response = await fetch("https://api.solanawatchx.site/live-feed");
-            if (!response.ok) throw new Error("Failed live feed");
-            const tokens = await response.json();
+            const response = await fetch('https://api.solanawatchx.site/live-tokens');
+            if (!response.ok) throw new Error('Failed to fetch live tokens');
 
+            const { tokens } = await response.json();
+            
             if (isInitialLoad) {
-                feedContainer.innerHTML = "";
+                statusElement.style.display = 'none';
                 isInitialLoad = false;
             }
 
-            tokens.forEach(async token => {
-                if (displayedTokens.has(token.mint)) return;
-                displayedTokens.add(token.mint);
+            const newTokens = tokens.filter(t => !displayedTokens.has(t.coinMint));
+            if (newTokens.length === 0) return;
 
-                const insight = await fetchTokenInsight(token);
-                const tokenElement = createTokenElement(token, insight);
+            newTokens.forEach(t => displayedTokens.add(t.coinMint));
+            
+            if (feedContainer.children.length > 2000) {
+                while (feedContainer.children.length > 1800) {
+                    const oldMint = feedContainer.lastChild.dataset.mint;
+                    if(oldMint) displayedTokens.delete(oldMint);
+                    feedContainer.removeChild(feedContainer.lastChild);
+                }
+            }
+
+            for (let i = newTokens.length - 1; i >= 0; i--) {
+                const tokenElement = createTokenElement(newTokens[i]);
                 feedContainer.prepend(tokenElement);
-            });
-        } catch (e) {
-            console.error("Live feed error", e);
-            statusElement.textContent = "Failed to load live feed.";
+                tokenElement.classList.add('new-token-animation');
+            }
+        } catch (err) {
+            console.error("❌ Fetch Error:", err);
+            if(isInitialLoad){
+                statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
+            }
         }
     }
 
-    // --- token card element ---
-    function createTokenElement(token, insight) {
-        const card = document.createElement("div");
-        card.className = "flex items-center gap-4 p-4 bg-gray-900/50 border border-gray-700 rounded-lg";
+    function createTokenElement(token) {
+        const card = document.createElement('div');
+        card.className = 'token-card rounded-lg p-3 sm:p-4';
+        card.dataset.mint = token.coinMint;
+
+        const socialIcons = {
+            twitter: `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.71v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path></svg>`,
+            telegram: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>`,
+            website: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>`
+        };
+
+        const socialsHTML = Object.entries({twitter: token.twitter, telegram: token.telegram, website: token.website})
+            .filter(([,url]) => url)
+            .map(([name, url]) => `
+            <a href="${url}" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white" title="${name.charAt(0).toUpperCase() + name.slice(1)}">
+                ${socialIcons[name] || ''}
+            </a>`).join('');
+
+        const pumpLink = `https://pump.fun/${token.coinMint}`;
+        const dexLink = `https://dexscreener.com/solana/${token.coinMint}`;
+
         card.innerHTML = `
-            <img class="w-12 h-12 rounded-full" alt="${token.symbol}">
-            <div class="flex-1">
-                <h3 class="text-white font-bold">${token.symbol}</h3>
-                <p class="text-gray-400 text-sm">${insight}</p>
-                <p class="text-gray-500 text-xs">${formatNum(token.volume)} · ${formatAge(token.launchUnixTime * 1000)}</p>
+            <div class="grid grid-cols-12 gap-3 items-center">
+                <div class="col-span-2 sm:col-span-1">
+                    <img id="img-${token.coinMint}" alt="${token.ticker}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover">
+                </div>
+                <div class="col-span-5 sm:col-span-5 flex flex-col justify-center">
+                    <div class="flex items-center space-x-2">
+                        <p class="font-bold text-white truncate">${token.name}</p>
+                        <div class="flex items-center space-x-1.5">${socialsHTML}</div>
+                    </div>
+                    <div class="flex items-center space-x-2 text-xs text-gray-400 flex-wrap">
+                        <span>$${token.ticker}</span>
+                        <span class="text-gray-500">•</span>
+                        <span>${formatAge(token.creationTime)}</span>
+                        <div class="copy-address-container flex items-center space-x-1 cursor-pointer hover:text-white" title="Copy Address">
+                            <span class="font-mono token-address">${token.coinMint.substring(0, 4)}...${token.coinMint.substring(token.coinMint.length - 4)}</span>
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="hidden sm:col-span-3 sm:grid grid-cols-2 gap-2 text-xs text-center">
+                    <div><div class="text-gray-500">MC</div><div class="font-semibold text-white">${formatNum(token.marketCap)}</div></div>
+                    <div><div class="text-gray-500">Vol</div><div class="font-semibold text-white">${formatNum(token.volume)}</div></div>
+                </div>
+                <div class="col-span-5 sm:col-span-3 flex items-center justify-end space-x-2">
+                   <a href="${pumpLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-2 rounded-md" title="Buy on Pump.fun"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 13.5L12 18L7.5 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+                   <a href="${dexLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-2 rounded-md" title="View on DexScreener"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg></a>
+                   <button class="get-insight-btn ai-btn text-xs font-bold px-3 py-1.5 rounded-md" title="Get AI Insight">AI</button>
+                </div>
             </div>
+            <div class="insight-content hidden mt-3 p-3 bg-gray-900/50 rounded text-sm text-purple-300 italic"></div>
         `;
-        loadImageWithFallback(card.querySelector("img"), token.imageUri, token.mint);
+
+        // Load image with fallback
+        const imgElement = card.querySelector(`#img-${token.coinMint}`);
+        loadImageWithFallback(imgElement, token.imageUrl, token.coinMint);
+
+        const insightBtn = card.querySelector('.get-insight-btn');
+        const insightContent = card.querySelector('.insight-content');
+        const copyContainer = card.querySelector('.copy-address-container');
+        const addressText = card.querySelector('.token-address');
+
+        copyContainer.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navigator.clipboard.writeText(token.coinMint);
+            const original = addressText.textContent;
+            addressText.textContent = "Copied!";
+            setTimeout(() => { addressText.textContent = original; }, 1500);
+        });
+        
+        insightBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            insightBtn.disabled = true;
+            insightBtn.innerHTML = `<svg class="insight-loading-spinner h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.75V6.25m0 11.5v1.5M17.25 6.75l-1.06 1.06M7.81 16.19l-1.06 1.06M20.25 12h-1.5M5.25 12h-1.5m14.25-5.25l-1.06-1.06M7.81 7.81l-1.06-1.06"></path></svg>`;
+            let insightText;
+            if (insightsCache.has(token.coinMint)) {
+                insightText = insightsCache.get(token.coinMint);
+            } else {
+                insightText = await fetchTokenInsight(token);
+                insightsCache.set(token.coinMint, insightText);
+            }
+            insightContent.textContent = `"${insightText}"`;
+            insightContent.classList.remove('hidden');
+            insightBtn.classList.add('hidden');
+        });
+
         return card;
     }
 
-    // --- start polling live feed ---
+    // --- start polling ---
     fetchLiveTokens();
     setInterval(fetchLiveTokens, POLLING_INTERVAL_MS);
+
+    // ===============================
+    // --- NEWS PANELS SCRIPT ---
+    // ===============================
+    const newsTrack = document.getElementById('news-track');
+    // Only run the news panel script if the container element exists on the page
+    if (newsTrack) {
+        const newsData = [
+            {
+                "title": "Solana Experiences Brief Network Congestion, Developers Address Root Causes",
+                "content": "The Solana network recently faced a period of increased transaction failure rates and slower finality due to high demand and specific implementation issues. Core developers quickly responded, initiating diagnostic procedures and rolling out targeted patches to enhance network resilience.",
+                "source_url": "https://solana.com/news/network-status-update-july-2024",
+                "event_date": "2024-07-25"
+            },
+            {
+                "title": "New DeFi Protocol Launches on Solana, Boosting Liquid Staking Options",
+                "content": "A new decentralized finance (DeFi) protocol, 'AquaStake,' has officially launched on the Solana blockchain, offering innovative liquid staking solutions. This platform aims to enhance capital efficiency for SOL holders, allowing them to earn staking rewards while their assets remain liquid.",
+                "source_url": "https://cryptonews.com/solana-defi-aqua-stake-launch",
+                "event_date": "2024-07-23"
+            },
+            {
+                "title": "Solana Ecosystem Fund Announces New Grants for dApp Developers",
+                "content": "To foster innovation, the Solana Foundation has announced a new round of grants for developers building decentralized applications (dApps) on the network. The fund aims to support projects focusing on scalability, user experience, and real-world utility.",
+                "source_url": "https://solana.org/news/developer-grants-program-2024",
+                "event_date": "2024-07-20"
+            },
+            {
+                "title": "Major NFT Marketplace Integrates Solana for Faster, Cheaper Mints",
+                "content": "One of the largest NFT marketplaces has completed its integration of the Solana network, allowing creators and collectors to mint and trade NFTs with significantly lower fees and faster transaction times. This move is expected to attract a new wave of digital artists to the platform.",
+                "source_url": "https://nftinsider.io/marketplace-integrates-solana",
+                "event_date": "2024-07-18"
+            },
+            {
+                "title": "Solana Mobile's Saga Phone Sees Surge in Demand After Airdrop News",
+                "content": "Demand for the Solana Saga smartphone has skyrocketed following announcements of exclusive token airdrops for phone owners. The device, which is tightly integrated with the Solana blockchain, is being positioned as a gateway to the next generation of web3 mobile applications.",
+                "source_url": "https://mobilecrypto.news/saga-phone-demand-surge",
+                "event_date": "2024-07-15"
+            },
+            {
+                "title": "Phantom Wallet Releases New Feature for Enhanced Security on Solana",
+                "content": "Phantom, a leading wallet in the Solana ecosystem, has rolled out a new security feature that helps protect users from malicious transactions and scams. The update includes real-time transaction simulation and clearer warnings for potentially dangerous dApp interactions.",
+                "source_url": "https://phantom.app/blog/new-security-features",
+                "event_date": "2024-07-12"
+            }
+        ];
+
+        const createNewsPanel = (item) => {
+            const eventDate = new Date(item.event_date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+
+            return `
+                <div class="news-panel flex-none w-80 md:w-96 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl shadow-lg overflow-hidden transform transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-cyan-300/10 hover:border-green-400 flex flex-col justify-center">
+                    <div class="p-4 flex flex-col">
+                        <h2 class="text-base font-bold text-gray-100 leading-tight mb-3 truncate" title="${item.title}">${item.title}</h2>
+                        <div class="flex justify-between items-center text-xs text-gray-400">
+                            <a href="${item.source_url}" target="_blank" rel="noopener noreferrer" class="font-semibold text-green-400 hover:text-green-300 transition-colors">Read Source &rarr;</a>
+                            <span>${eventDate}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+        
+        let content = '';
+        newsData.forEach(item => {
+            content += createNewsPanel(item);
+        });
+
+        newsTrack.innerHTML = content + content;
+
+        const speedFactor = 2; 
+        const panelCount = newsData.length;
+        const animationDuration = panelCount * speedFactor;
+        
+        newsTrack.style.animationDuration = `${animationDuration}s`;
+    }
 });
