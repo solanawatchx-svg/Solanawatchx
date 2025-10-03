@@ -109,3 +109,41 @@ body {
   .token-card {
     zoom: 65%; /* For mobile devices */
   }
+}
+
+/* ===============================
+   NEWS PANEL STYLES
+   =============================== */
+#news-panel {
+    display: grid;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+#news-panel a {
+    display: block;
+    background: #10121a;
+    border: 1px solid #2a2d3e;
+    padding: 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+#news-panel a:hover {
+    background: #181b2c;
+    border-color: #4390F1;
+    box-shadow: 0 0 15px rgba(67, 144, 241, 0.2);
+}
+
+#news-panel h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 0.5rem;
+}
+
+#news-panel p {
+    font-size: 0.85rem;
+    color: #aaa;
+}
