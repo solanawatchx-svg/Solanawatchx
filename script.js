@@ -19,10 +19,14 @@ document.addEventListener("DOMContentLoaded", () => {
             if (error) throw error;
             const currentCount = Math.min(count || 0, 500);
 
-            document.getElementById('whitelist-counter').textContent =
-                `${currentCount} / 500 Spots Filled`;
-            document.getElementById('progress-bar').style.width =
-                `${(currentCount / 500) * 100}%`;
+            const counterElement = document.getElementById('whitelist-counter');
+            if (counterElement) {
+                counterElement.textContent = `${currentCount} / 500 Spots Filled`;
+            }
+            const progressBarElement = document.getElementById('progress-bar');
+            if (progressBarElement) {
+                progressBarElement.style.width = `${(currentCount / 500) * 100}%`;
+            }
         } catch (error) {
             console.error('Error fetching whitelist count:', error.message);
         }
@@ -138,6 +142,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function fetchLiveTokens() {
+        // Stop if the feed container is not on the page
+        if (!feedContainer) return;
+
         try {
             const response = await fetch('https://api.solanawatchx.site/live-tokens');
             if (!response.ok) throw new Error('Failed to fetch live tokens');
@@ -145,7 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const { tokens } = await response.json();
             
             if (isInitialLoad) {
-                statusElement.style.display = 'none';
+                if(statusElement) statusElement.style.display = 'none';
                 isInitialLoad = false;
             }
 
@@ -169,7 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } catch (err) {
             console.error("❌ Fetch Error:", err);
-            if(isInitialLoad){
+            if(isInitialLoad && statusElement){
                 statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
             }
         }
@@ -273,47 +280,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- NEWS PANELS SCRIPT ---
     // ===============================
     const newsTrack = document.getElementById('news-track');
+    
     // Only run the news panel script if the container element exists on the page
     if (newsTrack) {
-        const newsData = [
-            {
-                "title": "Solana Experiences Brief Network Congestion, Developers Address Root Causes",
-                "content": "The Solana network recently faced a period of increased transaction failure rates and slower finality due to high demand and specific implementation issues. Core developers quickly responded, initiating diagnostic procedures and rolling out targeted patches to enhance network resilience.",
-                "source_url": "https://solana.com/news/network-status-update-july-2024",
-                "event_date": "2024-07-25"
-            },
-            {
-                "title": "New DeFi Protocol Launches on Solana, Boosting Liquid Staking Options",
-                "content": "A new decentralized finance (DeFi) protocol, 'AquaStake,' has officially launched on the Solana blockchain, offering innovative liquid staking solutions. This platform aims to enhance capital efficiency for SOL holders, allowing them to earn staking rewards while their assets remain liquid.",
-                "source_url": "https://cryptonews.com/solana-defi-aqua-stake-launch",
-                "event_date": "2024-07-23"
-            },
-            {
-                "title": "Solana Ecosystem Fund Announces New Grants for dApp Developers",
-                "content": "To foster innovation, the Solana Foundation has announced a new round of grants for developers building decentralized applications (dApps) on the network. The fund aims to support projects focusing on scalability, user experience, and real-world utility.",
-                "source_url": "https://solana.org/news/developer-grants-program-2024",
-                "event_date": "2024-07-20"
-            },
-            {
-                "title": "Major NFT Marketplace Integrates Solana for Faster, Cheaper Mints",
-                "content": "One of the largest NFT marketplaces has completed its integration of the Solana network, allowing creators and collectors to mint and trade NFTs with significantly lower fees and faster transaction times. This move is expected to attract a new wave of digital artists to the platform.",
-                "source_url": "https://nftinsider.io/marketplace-integrates-solana",
-                "event_date": "2024-07-18"
-            },
-            {
-                "title": "Solana Mobile's Saga Phone Sees Surge in Demand After Airdrop News",
-                "content": "Demand for the Solana Saga smartphone has skyrocketed following announcements of exclusive token airdrops for phone owners. The device, which is tightly integrated with the Solana blockchain, is being positioned as a gateway to the next generation of web3 mobile applications.",
-                "source_url": "https://mobilecrypto.news/saga-phone-demand-surge",
-                "event_date": "2024-07-15"
-            },
-            {
-                "title": "Phantom Wallet Releases New Feature for Enhanced Security on Solana",
-                "content": "Phantom, a leading wallet in the Solana ecosystem, has rolled out a new security feature that helps protect users from malicious transactions and scams. The update includes real-time transaction simulation and clearer warnings for potentially dangerous dApp interactions.",
-                "source_url": "https://phantom.app/blog/new-security-features",
-                "event_date": "2024-07-12"
-            }
-        ];
-
+        
         const createNewsPanel = (item) => {
             const eventDate = new Date(item.event_date).toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -333,18 +303,47 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             `;
         };
-        
-        let content = '';
-        newsData.forEach(item => {
-            content += createNewsPanel(item);
-        });
 
-        newsTrack.innerHTML = content + content;
+        const populateNewsScroller = (newsData) => {
+            if (!newsData || newsData.length === 0) {
+                // You could optionally hide the scroller or show a message
+                console.warn('No news data to display.');
+                return;
+            }
 
-        const speedFactor = 2; 
-        const panelCount = newsData.length;
-        const animationDuration = panelCount * speedFactor;
-        
-        newsTrack.style.animationDuration = `${animationDuration}s`;
+            let content = '';
+            newsData.forEach(item => {
+                content += createNewsPanel(item);
+            });
+
+            // Duplicate content for a seamless loop
+            newsTrack.innerHTML = content + content;
+
+            // Adjust animation speed based on content
+            const speedFactor = 2; 
+            const panelCount = newsData.length;
+            const animationDuration = panelCount * speedFactor;
+            
+            newsTrack.style.animationDuration = `${animationDuration}s`;
+        };
+
+        const fetchNewsData = async () => {
+            try {
+                // IMPORTANT: Replace with your actual AWS Public IP
+                const response = await fetch("http://34.204.51.121:3001/solana-news");
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                populateNewsScroller(data);
+            } catch (error) {
+                console.error("Could not fetch news data:", error);
+                // Optionally, you can populate with fallback data or hide the section
+                newsTrack.innerHTML = '<p class="text-center text-red-400">Could not load news feed.</p>';
+            }
+        };
+
+        fetchNewsData();
     }
 });
+
