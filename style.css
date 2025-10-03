@@ -111,39 +111,27 @@ body {
   }
 }
 
-/* ===============================
-   NEWS PANEL STYLES
-   =============================== */
-#news-panel {
-    display: grid;
-    gap: 1rem;
-    margin-top: 2rem;
+/* Styles for the news panel scroller */
+.news-container {
+    -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%, rgba(0,0,0,1) 90%, rgba(0,0,0,0) 100%);
+    mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%, rgba(0,0,0,1) 90%, rgba(0,0,0,0) 100%);
 }
 
-#news-panel a {
-    display: block;
-    background: #10121a;
-    border: 1px solid #2a2d3e;
-    padding: 1rem;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    text-decoration: none;
+.news-track {
+    /* The animation duration is set dynamically in script.js */
+    animation: scroll-horizontal linear infinite;
 }
 
-#news-panel a:hover {
-    background: #181b2c;
-    border-color: #4390F1;
-    box-shadow: 0 0 15px rgba(67, 144, 241, 0.2);
+.news-container:hover .news-track {
+    animation-play-state: paused;
 }
 
-#news-panel h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #fff;
-    margin-bottom: 0.5rem;
+@keyframes scroll-horizontal {
+    0% {
+        transform: translateX(0%);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
 }
 
-#news-panel p {
-    font-size: 0.85rem;
-    color: #aaa;
-}
