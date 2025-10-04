@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!feedContainer) return;
 
         try {
-            const response = await fetch('https://api.solanawatchx.site/live-tokens');
+            const response = await fetch("https://news.solanawatchx.site/solana-news");
             if (!response.ok) throw new Error('Failed to fetch live tokens');
 
             const { tokens } = await response.json();
