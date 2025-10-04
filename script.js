@@ -330,7 +330,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const fetchNewsData = async () => {
             try {
                 // IMPORTANT: Replace with your actual AWS Public IP
-                const response = await fetch("http://34.204.51.121:3001/solana-news");
+                const response = await fetch("https://news.solanawatchx.site/solana-news");
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
