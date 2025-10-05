@@ -304,28 +304,42 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
         };
 
-        const populateNewsScroller = (newsData) => {
-            if (!newsData || newsData.length === 0) {
-                // You could optionally hide the scroller or show a message
-                console.warn('No news data to display.');
-                return;
-            }
+// --- In script.js, REPLACE your entire function with this ---
 
-            let content = '';
-            newsData.forEach(item => {
-                content += createNewsPanel(item);
-            });
+const populateNewsScroller = (newsData) => {
+    if (!newsData || newsData.length === 0) {
+        console.warn('No news data to display.');
+        return;
+    }
 
-            // Duplicate content for a seamless loop
-            newsTrack.innerHTML = content + content;
+    // 1. Create and add the ORIGINAL news panels
+    let originalContent = '';
+    newsData.forEach(item => {
+        originalContent += createNewsPanel(item);
+    });
+    newsTrack.innerHTML = originalContent;
 
-            // Adjust animation speed based on content
-            const speedFactor = 2;  
-            const panelCount = newsData.length;
-            const animationDuration = panelCount * speedFactor;
-            
-            newsTrack.style.animationDuration = `${animationDuration}s`;
-        };
+    // 2. CLONE the original panels and append them
+    const originalPanels = Array.from(newsTrack.children);
+    originalPanels.forEach(panel => {
+        // cloneNode(true) makes a deep copy of the panel
+        newsTrack.appendChild(panel.cloneNode(true));
+    });
+
+    // 3. Calculate animation duration based on the REAL width (this part is important!)
+    requestAnimationFrame(() => {
+        // We use the 'originalPanels' we just stored to measure the width
+        // We add 24 to account for the margin (your 'space-x-6' class = 1.5rem = 24px)
+        const originalWidth = originalPanels.reduce((total, item) => total + item.offsetWidth + 24, 0);
+
+        // Set your desired speed in pixels per second
+        // Smaller number = FASTER. Bigger number = SLOWER.
+        const scrollSpeed = 120; 
+
+        const duration = originalWidth / scrollSpeed;
+        newsTrack.style.animationDuration = `${duration}s`;
+    });
+};
 
         const fetchNewsData = async () => {
             try {
