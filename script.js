@@ -1,4 +1,4 @@
-bro i said give me full script.js with updates - here again my script.js , please dont touch nor remove any single extra word - document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
     // ===============================
     // --- SUPABASE CONFIG (only for whitelist) ---
     // ===============================
@@ -279,72 +279,64 @@ bro i said give me full script.js with updates - here again my script.js , pleas
     // ===============================
     // --- NEWS PANELS SCRIPT ---
     // ===============================
-    const newsTrack = document.getElementById('news-track');
-    
-    // Only run the news panel script if the container element exists on the page
-    if (newsTrack) {
-        
-        const createNewsPanel = (item) => {
-            const eventDate = new Date(item.event_date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
+// ===============================
+// --- NEWS PANELS SCRIPT ---
+// ===============================
+const newsTrack1 = document.getElementById('news-track-1');
+const newsTrack2 = document.getElementById('news-track-2');
 
-            return `
-                <div class="news-panel flex-none w-80 md:w-96 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl shadow-lg overflow-hidden transform transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-cyan-300/10 hover:border-green-400 flex flex-col justify-center">
-                    <div class="p-4 flex flex-col">
-                        <h2 class="text-base font-bold text-gray-100 leading-tight mb-3 truncate" title="${item.title}">${item.title}</h2>
-                        <div class="flex justify-between items-center text-xs text-gray-400">
-                            <a href="${item.source_url}" target="_blank" rel="noopener noreferrer" class="font-semibold text-green-400 hover:text-green-300 transition-colors">Read Source &rarr;</a>
-                            <span>${eventDate}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        };
+// Only run if the new container elements exist
+if (newsTrack1 && newsTrack2) {
 
-// --- In script.js, REPLACE your entire function with this ---
+    const createNewsPanel = (item) => {
+        const eventDate = new Date(item.event_date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
 
-        const populateNewsScroller = (newsData) => {
-            if (!newsData || newsData.length === 0) {
-                // You could optionally hide the scroller or show a message
-                console.warn('No news data to display.');
-                return;
-            }
+        return `
+            <div class="news-panel flex-none w-80 md:w-96 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl shadow-lg p-4 mx-2">
+                <h2 class="text-base font-bold text-gray-100 leading-tight mb-3 truncate" title="${item.title}">${item.title}</h2>
+                <div class="flex justify-between items-center text-xs text-gray-400">
+                    <a href="${item.source_url}" target="_blank" rel="noopener noreferrer" class="font-semibold text-green-400 hover:text-green-300 transition-colors">Read Source &rarr;</a>
+                    <span>${eventDate}</span>
+                </div>
+            </div>
+        `;
+    };
 
-            let content = '';
-            newsData.forEach(item => {
-                content += createNewsPanel(item);
-            });
+    const populateNewsScroller = (newsData) => {
+        if (!newsData || newsData.length === 0) {
+            console.warn('No news data to display.');
+            const newsContainer = document.getElementById('news-container');
+            if (newsContainer) newsContainer.style.display = 'none'; // Hide the section if no news
+            return;
+        }
 
-            // Duplicate content for a seamless loop
-            newsTrack.innerHTML = content + content;
+        // Create the HTML content for the panels once
+        const content = newsData.map(createNewsPanel).join('');
 
-            // Adjust animation speed based on content
-            const speedFactor = 2; 
-            const panelCount = newsData.length;
-            const animationDuration = panelCount * speedFactor;
-            
-            newsTrack.style.animationDuration = `${animationDuration}s`;
-        };
+        // Populate both tracks with the identical content for the seamless loop
+        newsTrack1.innerHTML = content;
+        newsTrack2.innerHTML = content;
+    };
 
-        const fetchNewsData = async () => {
-            try {
-                // IMPORTANT: Replace with your actual AWS Public IP
-                const response = await fetch("https://news.solanawatchx.site/solana-news");
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                populateNewsScroller(data);
-            } catch (error) {
-                console.error("Could not fetch news data:", error);
-                // Optionally, you can populate with fallback data or hide the section
-                newsTrack.innerHTML = '<p class="text-center text-red-400">Could not load news feed.</p>';
-            }
-        };
+    const fetchNewsData = async () => {
+        try {
+            const response = await fetch("https://news.solanawatchx.site/solana-news");
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            populateNewsScroller(data);
+        } catch (error) {
+            console.error("Could not fetch news data:", error);
+            const newsContainer = document.getElementById('news-container');
+            if (newsContainer) newsContainer.innerHTML = '<p class="text-center text-red-400 py-4">Could not load news feed.</p>';
+        }
+    };
 
-        fetchNewsData();
-    }
+    fetchNewsData();
+}
 });
