@@ -120,6 +120,7 @@ body {
 .news-track {
     /* The animation duration is set dynamically in script.js */
     animation: scroll-horizontal linear infinite;
+    white-space: nowrap;
 }
 
 .news-container:hover .news-track {
