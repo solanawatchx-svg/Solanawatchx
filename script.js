@@ -320,11 +320,27 @@ document.addEventListener("DOMContentLoaded", () => {
             newsTrack.innerHTML = content + content;
 
             // Adjust animation speed based on content
-            const speedFactor = 2; 
-            const panelCount = newsData.length;
-            const animationDuration = panelCount * speedFactor;
-            
-            newsTrack.style.animationDuration = `${animationDuration}s`;
+// --- REPLACE IT WITH THIS ---
+
+// We use requestAnimationFrame to ensure elements are rendered before we measure them.
+requestAnimationFrame(() => {
+    const newsItems = newsTrack.querySelectorAll('.news-panel');
+    // Get the width of the *original* set of items (the first half).
+    // We add 24 to account for the margin (space-x-6 = 1.5rem = 24px).
+    const originalWidth = Array.from(newsItems)
+        .slice(0, newsItems.length / 2)
+        .reduce((total, item) => total + item.offsetWidth + 24, 0);
+
+    // Set your desired speed in pixels per second.
+    // Make this number smaller for a FASTER scroll, or bigger for a SLOWER scroll.
+    const scrollSpeed = 100; // e.g., scroll 100 pixels every second.
+
+    // Calculate the perfect duration
+    const duration = originalWidth / scrollSpeed;
+
+    // Apply the new duration
+    newsTrack.style.animationDuration = `${duration}s`;
+});
         };
 
         const fetchNewsData = async () => {
