@@ -4,34 +4,38 @@ document.addEventListener("DOMContentLoaded", () => {
     // ===============================
     const SUPABASE_URL = 'https://dyferdlczmzxurlfrjnd.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5ZmVyZGxjem16eHVybGZyam5kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjYxMDMsImV4cCI6MjA3NDIwMjEwM30.LTXkmO2MkqYqg4g7Bv7H8u1rgQnDnQ43FDaT7DzFAt8';
-    const { createClient } = supabase;
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Check if supabase is available, as it might not be on all pages
+    if (typeof supabase !== 'undefined') {
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ===============================
-    // --- WHITELIST COUNTER ---
-    // ===============================
-    async function updateWhitelistCounter() {
-        try {
-            const { count, error } = await supabaseClient
-                .from('whitelist')
-                .select('*', { count: 'exact', head: true });
+        // ===============================
+        // --- WHITELIST COUNTER ---
+        // ===============================
+        async function updateWhitelistCounter() {
+            try {
+                const { count, error } = await supabaseClient
+                    .from('whitelist')
+                    .select('*', { count: 'exact', head: true });
 
-            if (error) throw error;
-            const currentCount = Math.min(count || 0, 500);
+                if (error) throw error;
+                const currentCount = Math.min(count || 0, 500);
 
-            const counterElement = document.getElementById('whitelist-counter');
-            if (counterElement) {
-                counterElement.textContent = `${currentCount} / 500 Spots Filled`;
+                const counterElement = document.getElementById('whitelist-counter');
+                if (counterElement) {
+                    counterElement.textContent = `${currentCount} / 500 Spots Filled`;
+                }
+                const progressBarElement = document.getElementById('progress-bar');
+                if (progressBarElement) {
+                    progressBarElement.style.width = `${(currentCount / 500) * 100}%`;
+                }
+            } catch (error) {
+                console.error('Error fetching whitelist count:', error.message);
             }
-            const progressBarElement = document.getElementById('progress-bar');
-            if (progressBarElement) {
-                progressBarElement.style.width = `${(currentCount / 500) * 100}%`;
-            }
-        } catch (error) {
-            console.error('Error fetching whitelist count:', error.message);
         }
+        updateWhitelistCounter();
     }
-    updateWhitelistCounter();
+
 
     // ===============================
     // --- SCROLL ANIMATIONS ---
@@ -273,17 +277,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- start polling ---
-    fetchLiveTokens();
-    setInterval(fetchLiveTokens, POLLING_INTERVAL_MS);
+    if (feedContainer) {
+        fetchLiveTokens();
+        setInterval(fetchLiveTokens, POLLING_INTERVAL_MS);
+    }
 
     // ===============================
-    // --- NEWS PANELS SCRIPT ---
+    // --- EDITED NEWS PANELS SCRIPT ---
     // ===============================
-    const newsTrack = document.getElementById('news-track');
-    
-    // Only run the news panel script if the container element exists on the page
-    if (newsTrack) {
-        
+    const newsTrack1 = document.getElementById('news-track-1');
+    const newsTrack2 = document.getElementById('news-track-2');
+
+    // Only run if the new container elements exist
+    if (newsTrack1 && newsTrack2) {
+
         const createNewsPanel = (item) => {
             const eventDate = new Date(item.event_date).toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -291,47 +298,36 @@ document.addEventListener("DOMContentLoaded", () => {
                 day: 'numeric'
             });
 
+            // Added the "news-panel" class for the hover styles from your CSS
             return `
-                <div class="news-panel flex-none w-80 md:w-96 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl shadow-lg overflow-hidden transform transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-cyan-300/10 hover:border-green-400 flex flex-col justify-center">
-                    <div class="p-4 flex flex-col">
-                        <h2 class="text-base font-bold text-gray-100 leading-tight mb-3 truncate" title="${item.title}">${item.title}</h2>
-                        <div class="flex justify-between items-center text-xs text-gray-400">
-                            <a href="${item.source_url}" target="_blank" rel="noopener noreferrer" class="font-semibold text-green-400 hover:text-green-300 transition-colors">Read Source &rarr;</a>
-                            <span>${eventDate}</span>
-                        </div>
+                <div class="news-panel flex-none w-80 md:w-96 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl shadow-lg p-4 mx-2">
+                    <h2 class="text-base font-bold text-gray-100 leading-tight mb-3 truncate" title="${item.title}">${item.title}</h2>
+                    <div class="flex justify-between items-center text-xs text-gray-400">
+                        <a href="${item.source_url}" target="_blank" rel="noopener noreferrer" class="font-semibold text-green-400 hover:text-green-300 transition-colors">Read Source &rarr;</a>
+                        <span>${eventDate}</span>
                     </div>
                 </div>
             `;
         };
 
-// --- In script.js, REPLACE your entire function with this ---
-
         const populateNewsScroller = (newsData) => {
             if (!newsData || newsData.length === 0) {
-                // You could optionally hide the scroller or show a message
                 console.warn('No news data to display.');
+                const newsContainer = document.getElementById('news-container');
+                if (newsContainer) newsContainer.style.display = 'none'; // Hide the section if no news
                 return;
             }
 
-            let content = '';
-            newsData.forEach(item => {
-                content += createNewsPanel(item);
-            });
+            // Create the HTML content for the panels once
+            const content = newsData.map(createNewsPanel).join('');
 
-            // Duplicate content for a seamless loop
-            newsTrack.innerHTML = content + content;
-
-            // Adjust animation speed based on content
-            const speedFactor = 2; 
-            const panelCount = newsData.length;
-            const animationDuration = panelCount * speedFactor;
-            
-            newsTrack.style.animationDuration = `${animationDuration}s`;
+            // Populate both tracks with the identical content for the seamless loop
+            newsTrack1.innerHTML = content;
+            newsTrack2.innerHTML = content;
         };
 
         const fetchNewsData = async () => {
             try {
-                // IMPORTANT: Replace with your actual AWS Public IP
                 const response = await fetch("https://news.solanawatchx.site/solana-news");
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -340,8 +336,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 populateNewsScroller(data);
             } catch (error) {
                 console.error("Could not fetch news data:", error);
-                // Optionally, you can populate with fallback data or hide the section
-                newsTrack.innerHTML = '<p class="text-center text-red-400">Could not load news feed.</p>';
+                const newsContainer = document.getElementById('news-container');
+                if (newsContainer) newsContainer.innerHTML = '<p class="text-center text-red-400 py-4">Could not load news feed.</p>';
             }
         };
 
