@@ -283,19 +283,15 @@ const newsTrack2 = document.getElementById('news-track-2');
 
 // Only run if the new container elements exist
 if (newsTrack1 && newsTrack2) {
-
     const createNewsPanel = (item) => {
         const eventDate = new Date(item.event_date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
+            year: 'numeric', month: 'short', day: 'numeric'
         });
-
         return `
-            <div class="news-panel flex-none w-80 md:w-96 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl shadow-lg p-4 mx-2">
+            <div class="news-panel flex-none w-80 md:w-96 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl shadow-lg p-4 mx-4">
                 <h2 class="text-base font-bold text-gray-100 leading-tight mb-3 truncate" title="${item.title}">${item.title}</h2>
                 <div class="flex justify-between items-center text-xs text-gray-400">
-                    <a href="${item.source_url}" target="_blank" rel="noopener noreferrer" class="font-semibold text-green-400 hover:text-green-300 transition-colors">Read Source &rarr;</a>
+                    <a href="${item.source_url}" target="_blank" rel="noopener noreferrer" class="font-semibold text-green-400 hover:text-green-300">Read Source &rarr;</a>
                     <span>${eventDate}</span>
                 </div>
             </div>
@@ -305,15 +301,9 @@ if (newsTrack1 && newsTrack2) {
     const populateNewsScroller = (newsData) => {
         if (!newsData || newsData.length === 0) {
             console.warn('No news data to display.');
-            const newsContainer = document.getElementById('news-container');
-            if (newsContainer) newsContainer.style.display = 'none'; // Hide the section if no news
             return;
         }
-
-        // Create the HTML content for the panels once
         const content = newsData.map(createNewsPanel).join('');
-
-        // Populate both tracks with the identical content for the seamless loop
         newsTrack1.innerHTML = content;
         newsTrack2.innerHTML = content;
     };
@@ -321,18 +311,13 @@ if (newsTrack1 && newsTrack2) {
     const fetchNewsData = async () => {
         try {
             const response = await fetch("https://news.solanawatchx.site/solana-news");
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             populateNewsScroller(data);
         } catch (error) {
             console.error("Could not fetch news data:", error);
-            const newsContainer = document.getElementById('news-container');
-            if (newsContainer) newsContainer.innerHTML = '<p class="text-center text-red-400 py-4">Could not load news feed.</p>';
         }
     };
-
     fetchNewsData();
 }
 });
