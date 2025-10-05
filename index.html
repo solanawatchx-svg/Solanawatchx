@@ -52,9 +52,10 @@
         <!-- News Panel Scroller -->
         <section class="py-0 md:py-4">
             <div class="container mx-auto">
-                <div id="news-container" class="news-container w-full overflow-hidden relative py-4">
-                    <div id="news-track" class="news-track flex ">
-                        <!-- News panels will be dynamically inserted by script.js -->
+                <div id="news-container" ...>
+                    <div class="flex w-max"> <!-- A wrapper to hold the two tracks -->
+                        <div id="news-track-1" ...></div> <!-- Track 1 -->
+                        <div id="news-track-2" ...></div> <!-- Track 2 (The Duplicate) -->
                     </div>
                 </div>
             </div>
