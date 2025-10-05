@@ -26,7 +26,6 @@ body {
     background: #10121a;
     border: 1px solid #2a2d3e;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    zoom: 0%;
 }
 .token-card:hover {
     border-color: #4390F1;
@@ -111,28 +110,26 @@ body {
   }
 }
 
-/* === EDITED SECTION START === */
+/* === CORRECTED AND UPDATED NEWS SCROLLER STYLES === */
 
-/* Styles for the news panel scroller */
 .news-container {
     -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
     mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
 }
 
-/* The animation keyframes for the seamless marquee */
 @keyframes marquee {
     0% { transform: translateX(0%); }
     100% { transform: translateX(-100%); }
 }
 
-/* This class will be applied to the elements being animated (the two tracks) */
 .news-marquee-content {
     animation: marquee 60s linear infinite;
 }
+
 .news-container:hover .news-marquee-content {
     animation-play-state: paused;
+}
 
-/* Optional: A nice hover effect for individual news panels */
 .news-panel {
     transition: transform 0.3s ease;
 }
@@ -140,4 +137,3 @@ body {
     transform: scale(1.03);
 }
 
-/* === EDITED SECTION END === */
