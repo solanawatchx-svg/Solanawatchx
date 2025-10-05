@@ -292,7 +292,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             return `
-                <div class="news-panel flex-none w-80 md:w-96 mr-6 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl shadow-lg overflow-hidden transform transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-cyan-300/10 hover:border-green-400 flex flex-col justify-center">
+                <div class="news-panel flex-none w-80 md:w-96 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl shadow-lg overflow-hidden transform transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-cyan-300/10 hover:border-green-400 flex flex-col justify-center">
                     <div class="p-4 flex flex-col">
                         <h2 class="text-base font-bold text-gray-100 leading-tight mb-3 truncate" title="${item.title}">${item.title}</h2>
                         <div class="flex justify-between items-center text-xs text-gray-400">
