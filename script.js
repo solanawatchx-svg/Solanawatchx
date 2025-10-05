@@ -276,9 +276,6 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchLiveTokens();
     setInterval(fetchLiveTokens, POLLING_INTERVAL_MS);
 
-    // ===============================
-    // --- NEWS PANELS SCRIPT ---
-    // ===============================
 // ===============================
 // --- NEWS PANELS SCRIPT ---
 // ===============================
