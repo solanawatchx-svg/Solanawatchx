@@ -253,3 +253,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+// ===============================
+// --- LIVE SOL PRICE ---
+// ===============================
+const solPriceElement = document.getElementById('sol-price-value');
+
+async function fetchSolPrice() {
+    try {
+        const response = await fetch("https://frontend-api-v3.pump.fun/sol-price");
+        if (!response.ok) throw new Error("Failed to fetch SOL price");
+        const data = await response.json();
+        solPriceElement.textContent = parseFloat(data.price).toFixed(2);
+    } catch (err) {
+        console.error("❌ SOL price fetch error:", err);
+        solPriceElement.textContent = "--";
+    }
+}
+
+// Initial fetch
+fetchSolPrice();
+// Update every 5 seconds
+setInterval(fetchSolPrice, 5000);
