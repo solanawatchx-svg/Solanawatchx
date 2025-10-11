@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         async function fetchTokenInsight(token) {
-            const systemPrompt = "You are a witty, slightly cynical crypto market analyst. Provide a brief, one-sentence speculative analysis for a new token from pump.fun. The analysis should be crea[...]"
+            const systemPrompt = "You are a witty, slightly cynical crypto market analyst. Provide a brief, one-sentence speculative analysis for a new token from pump.fun. The analysis should be creative, fun, and display a healthy skepticism about moonshots.";
             const userQuery = `Analyze this token: Name: ${token.name}, Ticker: $${token.ticker}, Market Cap: ${formatNum(token.marketCap)}`;
             const payload = {
                 contents: [{ parts: [{ text: userQuery }] }],
@@ -179,26 +179,33 @@ document.addEventListener("DOMContentLoaded", () => {
             card.dataset.mint = token.coinMint;
 
             const socialIcons = {
-                twitter: `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19[...]`,
-                telegram: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0[...]`,
-                website: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><pa[...]`
+                twitter: `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996A4.107 4.107 0 0016.616 4c-2.266 0-4.104 1.838-4.104 4.104 0 .322.036.637.106.938-3.41-.171-6.434-1.804-8.46-4.286a4.084 4.084 0 00-.555 2.065c0 1.426.726 2.684 1.832 3.423a4.093 4.093 0 01-1.859-.513v.052c0 1.993 1.417 3.654 3.293 4.032a4.095 4.095 0 01-1.853.07c.523 1.633 2.037 2.823 3.834 2.855A8.233 8.233 0 012 19.54a11.616 11.616 0 006.29 1.84"/>
+                </svg>`,
+                telegram: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .492-.41l2.055-9.484 5.346-2.33a.5.5 0 0 0-.09-.948l-21-5.5A.5.5 0 0 0 .5 4.5v.011a.5.5 0 0 0 .364.486l5.98 1.568 2.495 7.034-2.136 4.273a.5.5 0 0 0 .338.73l3.994.833a.5.5 0 0 0 .571-.278l2.581-5.33 3.021 7.163a.5.5 0 0 0 .44.297z"/></svg>`,
+                website: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>`
             };
-            const socialsHTML = Object.entries({twitter: token.twitter, telegram: token.telegram, website: token.website}).filter(([,url]) => url).map(([name, url]) => `<a href="${url}" target="_blank[...]`).join('');
+            const socialsHTML = Object.entries({twitter: token.twitter, telegram: token.telegram, website: token.website})
+                .filter(([,url]) => url)
+                .map(([name, url]) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="mx-1">${socialIcons[name]}</a>`)
+                .join('');
             const pumpLink = `https://pump.fun/${token.coinMint}`;
             const dexLink = `https://dexscreener.com/solana/${token.coinMint}`;
-            card.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center"><div class="col-span-2 sm:col-span-1"><img id="img-${token.coinMint}" alt="${token.ticker}" class="w-10 h-10 sm:w-12 sm:[...]`;
+            card.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center"><div class="col-span-2 sm:col-span-1"><img id="img-${token.coinMint}" alt="${token.ticker}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"></div><div class="col-span-10 sm:col-span-5 flex flex-col justify-center"><div class="flex items-center space-x-2"><p class="font-bold text-white truncate">${token.name}</p><div class="flex items-center space-x-1.5">${socialsHTML}</div></div><div class="flex items-center space-x-2 text-xs text-gray-400 flex-wrap"><span>$${token.ticker}</span><span class="text-gray-500">•</span><span>${formatAge(token.creationTime)}</span><div class="copy-address-container flex items-center space-x-1 cursor-pointer hover:text-white" title="Copy Address"><span class="font-mono token-address">${token.coinMint.substring(0, 4)}...${token.coinMint.substring(token.coinMint.length - 4)}</span></div></div></div><div class="hidden sm:col-span-3 sm:grid grid-cols-2 gap-2 text-xs text-center"><div><div class="text-gray-500">MC</div><div class="font-semibold text-white">${formatNum(token.marketCap)}</div></div><div><div class="text-gray-500">Vol</div><div class="font-semibold text-white">${formatNum(token.volume)}</div></div></div><div class="col-span-12 sm:col-span-3 flex items-center justify-end space-x-2"><a href="${pumpLink}" target="_blank" class="action-btn p-2 rounded-md">Pump</a><a href="${dexLink}" target="_blank" class="action-btn p-2 rounded-md">Dex</a></div></div>`;
             const imgElement = card.querySelector(`#img-${token.coinMint}`);
             loadImageWithFallback(imgElement, token.imageUrl, token.coinMint);
-            const insightBtn = card.querySelector('.get-insight-btn');
-            const insightContent = card.querySelector('.insight-content');
+            // Copy address logic
             const copyContainer = card.querySelector('.copy-address-container');
             const addressText = card.querySelector('.token-address');
-            copyContainer.addEventListener('click', (e) => { e.stopPropagation(); navigator.clipboard.writeText(token.coinMint); const original = addressText.textContent; addressText.textContent = "Co[...]
-            insightBtn.addEventListener('click', async (e) => { e.stopPropagation(); insightBtn.disabled = true; insightBtn.innerHTML = `<svg class="insight-loading-spinner h-4 w-4" fill="none" viewBo[...]
+            copyContainer.addEventListener('click', (e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(token.coinMint);
+                const original = addressText.textContent;
+                addressText.textContent = "Copied!";
+                setTimeout(() => { addressText.textContent = original; }, 1500);
+            });
             return card;
         }
 
-        
         fetchLiveTokens();
         setInterval(fetchLiveTokens, POLLING_INTERVAL_MS);
     }
