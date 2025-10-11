@@ -173,6 +173,27 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
+
+
+async function updateSolPrice() {
+  try {
+    const res = await fetch('https://api.solanawatchx.site/sol-price');
+    const data = await res.json();
+    if (data.price) {
+      document.getElementById('solPrice').innerText = `${data.price.toFixed(2)} USD`;
+    }
+  } catch (err) {
+    console.error('SOL price fetch error:', err);
+  }
+}
+
+// Fetch immediately and refresh every 30 seconds
+updateSolPrice();
+setInterval(updateSolPrice, 30000);
+
+
+
+        
         function createTokenElement(token) {
             const card = document.createElement('div');
             card.className = 'token-card rounded-lg p-3 sm:p-4';
