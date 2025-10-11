@@ -201,7 +201,13 @@ document.addEventListener("DOMContentLoaded", () => {
         // --- start polling ---
         fetchLiveTokens();
         setInterval(fetchLiveTokens, POLLING_INTERVAL_MS);
+        // Initial fetch
+        fetchSolPrice();
+        // Update every SOL_PRICE_INTERVAL_MS milliseconds
+        setInterval(fetchSolPrice, SOL_PRICE_INTERVAL_MS);
+
     }
+    
 
 
     // ===============================
