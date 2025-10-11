@@ -202,34 +202,35 @@ document.addEventListener("DOMContentLoaded", () => {
         fetchLiveTokens();
         setInterval(fetchLiveTokens, POLLING_INTERVAL_MS);
         // Initial fetch
-        fetchSolPrice();
-        // Update every SOL_PRICE_INTERVAL_MS milliseconds
-        setInterval(fetchSolPrice, SOL_PRICE_INTERVAL_MS);
-
     }
     
 
-
-    // ===============================
-// --- LIVE SOLANA PRICE ---
 // ===============================
-const solPriceElement = document.getElementById('sol-price'); // Create an element in HTML to show it
-const SOL_PRICE_INTERVAL_MS = 5000; // Update every 5 seconds
+// --- LIVE SOLANA PRICE (fetch via your API) ---
+// ===============================
+const solPriceElement = document.getElementById('sol-price'); // ensure this exists in your HTML
+const SOL_PRICE_INTERVAL_MS = 5000; // 5 seconds
 
 async function fetchSolPrice() {
     try {
-        const response = await fetch('https://frontend-api-v3.pump.fun/sol-price');
-        if (!response.ok) throw new Error('Failed to fetch SOL price');
-        const data = await response.json();
-
-        // Assuming the API returns { price: 24.56 } or similar
-        const price = data?.price || 0;
-        solPriceElement.textContent = `$${price.toFixed(2)}`;
+        if (!solPriceElement) return;
+        const resp = await fetch('https://api.solanawatchx.site/sol-price', { cache: "no-store" });
+        if (!resp.ok) throw new Error('Failed to fetch SOL price');
+        const json = await resp.json();
+        // pump.fun API shape may be { price: 24.56 } or { sol: { price: 24.56 } }
+        const price = (json.price ?? json?.sol?.price ?? json?.data?.price) || 0;
+        // If price is string, try to parse
+        const p = typeof price === "string" ? parseFloat(price) : price;
+        solPriceElement.textContent = p ? `$${p.toFixed(2)}` : 'N/A';
     } catch (err) {
         console.error("❌ SOL Price Fetch Error:", err);
-        solPriceElement.textContent = 'Error';
+        if (solPriceElement) solPriceElement.textContent = 'Error';
     }
 }
+
+// start SOL polling (make sure these lines run after DOM element exists)
+fetchSolPrice();
+setInterval(fetchSolPrice, SOL_PRICE_INTERVAL_MS);
 
 
     
