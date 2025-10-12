@@ -37,6 +37,31 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+
+// ===============================
+// --- SOL PRICE FETCH ---
+// ===============================
+    const solPriceElement = document.getElementById('sol-price');
+    let currentSolPrice = null;
+    
+    async function fetchSolPrice() {
+        try {
+            const response = await fetch('https://api.solanawatchx.site/sol-price');
+            if (!response.ok) throw new Error("Failed to fetch SOL price");
+            const data = await response.json();
+            currentSolPrice = data.solana_usd || data.solPrice || 0; // depending on your API key
+            if (solPriceElement) solPriceElement.textContent = `SOL: $${currentSolPrice.toFixed(2)}`;
+        } catch (err) {
+            console.error("❌ Error fetching SOL price:", err);
+            if (solPriceElement) solPriceElement.textContent = "SOL: --";
+        }
+    }
+    // fetch immediately and every 30 seconds
+    fetchSolPrice();
+    setInterval(fetchSolPrice, 30000);
+
+
+    
     // ===============================
     // --- SCROLL ANIMATIONS ---
     // ===============================
