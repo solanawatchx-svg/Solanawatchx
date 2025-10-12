@@ -166,6 +166,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const response = await fetch("https://api.solanawatchx.site/live-tokens");
                 if (!response.ok) throw new Error('Failed to fetch live tokens');
                 const { tokens } = await response.json();
+                // 🔹 Sort tokens by creationTime (newest first)
+                tokens.sort((a, b) => b.creationTime - a.creationTime);
                 
                 if (isInitialLoad) {
                     if(statusElement) statusElement.style.display = 'none';
