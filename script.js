@@ -162,61 +162,44 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-async function fetchLiveTokens() {
-    try {
-        const response = await fetch("https://api.solanawatchx.site/live-tokens");
-        if (!response.ok) throw new Error('Failed to fetch live tokens');
-        const { tokens } = await response.json();
+                async function fetchLiveTokens() {
+            try {
+                const response = await fetch("https://api.solanawatchx.site/live-tokens");
+                if (!response.ok) throw new Error('Failed to fetch live tokens');
+                const { tokens } = await response.json();
+                
+                if (isInitialLoad) {
+                    if(statusElement) statusElement.style.display = 'none';
+                    isInitialLoad = false;
+                }
 
-        if (isInitialLoad) {
-            if(statusElement) statusElement.style.display = 'none';
-            isInitialLoad = false;
-            // On initial load, display all and populate the Set
-            tokens.sort((a, b) => b.creationTime - a.creationTime);
-            tokens.forEach(t => {
-                const tokenElement = createTokenElement(t);
-                feedContainer.appendChild(tokenElement); // Append on initial load
-                displayedTokens.add(t.coinMint);
-            });
-            return; // Exit after initial load
-        }
+                //const newTokens = tokens.filter(t => !displayedTokens.has(t.coinMint));
+                //if (newTokens.length === 0) return;
 
-        // --- Core Fix: Identify and Handle ONLY New Tokens ---
-        // 1. Filter out tokens we've already displayed.
-        const newTokens = tokens.filter(t => !displayedTokens.has(t.coinMint));
-        if (newTokens.length === 0) return; // No new tokens, do nothing.
+                //newTokens.forEach(t => displayedTokens.add(t.coinMint));
+                if (tokens.length === 0) return;
 
-        // 2. Add the mints of the new tokens to the displayed set.
-        newTokens.forEach(t => displayedTokens.add(t.coinMint));
+                // Sort new tokens by creationTime (newest first)
+                tokens.sort((a, b) => b.creationTime - a.creationTime);
 
-        // 3. Sort the new tokens by creationTime (newest first)
-        newTokens.sort((a, b) => b.creationTime - a.creationTime);
-
-        // 4. Prepend ONLY the new tokens to the feed.
-        for (let i = newTokens.length - 1; i >= 0; i--) {
-            const tokenElement = createTokenElement(newTokens[i]);
-            feedContainer.prepend(tokenElement);
-            // Apply the fade-in animation
-            tokenElement.classList.add('new-token-animation');
-        }
-        // ---------------------------------------------------
-        
-        const MAX_FEED_LENGTH = 50;
-        while (feedContainer.children.length > MAX_FEED_LENGTH) {
-            // Remove the oldest token's mint from the Set as well
-            const removedMint = feedContainer.lastChild.dataset.mint;
-            if (removedMint) {
-                displayedTokens.delete(removedMint);
+                // Prepend each new token to the feed (so newest are on top)
+                for (let i = tokens.length - 1; i >= 0; i--) {
+                    const tokenElement = createTokenElement(tokens[i]);
+                    feedContainer.prepend(tokenElement);
+                    tokenElement.classList.add('new-token-animation');
+                }
+                
+                const MAX_FEED_LENGTH = 50;
+                while (feedContainer.children.length > MAX_FEED_LENGTH) {
+                    feedContainer.removeChild(feedContainer.lastChild);
+                }
+            } catch (err) {
+                console.error("❌ Fetch Error:", err);
+                if(isInitialLoad && statusElement){
+                    statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
+                }
             }
-            feedContainer.removeChild(feedContainer.lastChild);
         }
-    } catch (err) {
-        console.error("❌ Fetch Error:", err);
-        if(isInitialLoad && statusElement){
-            statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
-        }
-    }
-}
 
         
         function createTokenElement(token) {
