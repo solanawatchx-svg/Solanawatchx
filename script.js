@@ -172,23 +172,25 @@ document.addEventListener("DOMContentLoaded", () => {
                     isInitialLoad = false;
                 }
 
-                const newTokens = tokens.filter(t => !displayedTokens.has(t.coinMint));
-                if (newTokens.length === 0) return;
+                //const newTokens = tokens.filter(t => !displayedTokens.has(t.coinMint));
+                //if (newTokens.length === 0) return;
 
-                newTokens.forEach(t => displayedTokens.add(t.coinMint));
-                
-                if (feedContainer.children.length > 50) {
-                    while (feedContainer.children.length > 40) {
-                        const oldMint = feedContainer.lastChild.dataset.mint;
-                        if(oldMint) displayedTokens.delete(oldMint);
-                        feedContainer.removeChild(feedContainer.lastChild);
-                    }
-                }
+                //newTokens.forEach(t => displayedTokens.add(t.coinMint));
+                if (tokens.length === 0) return;
 
-                for (let i = newTokens.length - 1; i >= 0; i--) {
-                    const tokenElement = createTokenElement(newTokens[i]);
+                // Sort new tokens by creationTime (newest first)
+                tokens.sort((a, b) => b.creationTime - a.creationTime);
+
+                // Prepend each new token to the feed (so newest are on top)
+                for (let i = tokens.length - 1; i >= 0; i--) {
+                    const tokenElement = createTokenElement(tokens[i]);
                     feedContainer.prepend(tokenElement);
                     tokenElement.classList.add('new-token-animation');
+                }
+                
+                const MAX_FEED_LENGTH = 50;
+                while (feedContainer.children.length > MAX_FEED_LENGTH) {
+                    feedContainer.removeChild(feedContainer.lastChild);
                 }
             } catch (err) {
                 console.error("❌ Fetch Error:", err);
