@@ -162,60 +162,44 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        async function fetchLiveTokens() {
-    try {
-        const response = await fetch("https://api.solanawatchx.site/live-tokens");
-        if (!response.ok) throw new Error('Failed to fetch live tokens');
-        const { tokens } = await response.json();
-
-        if (isInitialLoad) {
-            if (statusElement) statusElement.style.display = 'none';
-            isInitialLoad = false;
-        }
-
-        if (!tokens || tokens.length === 0) return;
-
-        // Sort newest first
-        tokens.sort((a, b) => b.creationTime - a.creationTime);
-
-        tokens.forEach(token => {
-            // ✅ Skip tokens already displayed
-            if (displayedTokens.has(token.coinMint)) {
-                // Optionally update market cap / volume here:
-                const existingCard = feedContainer.querySelector(`[data-mint="${token.coinMint}"]`);
-                if (existingCard) {
-                    const mcElem = existingCard.querySelector('.text-white.font-semibold');
-                    const volElem = existingCard.querySelectorAll('.text-white.font-semibold')[1];
-                    if (mcElem) mcElem.textContent = formatNum(token.marketCap);
-                    if (volElem) volElem.textContent = formatNum(token.volume);
+                async function fetchLiveTokens() {
+            try {
+                const response = await fetch("https://api.solanawatchx.site/live-tokens");
+                if (!response.ok) throw new Error('Failed to fetch live tokens');
+                const { tokens } = await response.json();
+                
+                if (isInitialLoad) {
+                    if(statusElement) statusElement.style.display = 'none';
+                    isInitialLoad = false;
                 }
-                return;
+
+                //const newTokens = tokens.filter(t => !displayedTokens.has(t.coinMint));
+                //if (newTokens.length === 0) return;
+
+                //newTokens.forEach(t => displayedTokens.add(t.coinMint));
+                if (tokens.length === 0) return;
+
+                // Sort new tokens by creationTime (newest first)
+                tokens.sort((a, b) => b.creationTime - a.creationTime);
+
+                // Prepend each new token to the feed (so newest are on top)
+                for (let i = tokens.length - 1; i >= 0; i--) {
+                    const tokenElement = createTokenElement(tokens[i]);
+                    feedContainer.prepend(tokenElement);
+                    tokenElement.classList.add('new-token-animation');
+                }
+                
+                const MAX_FEED_LENGTH = 50;
+                while (feedContainer.children.length > MAX_FEED_LENGTH) {
+                    feedContainer.removeChild(feedContainer.lastChild);
+                }
+            } catch (err) {
+                console.error("❌ Fetch Error:", err);
+                if(isInitialLoad && statusElement){
+                    statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
+                }
             }
-
-            // ✅ Add new token
-            displayedTokens.add(token.coinMint);
-            const tokenElement = createTokenElement(token);
-            feedContainer.prepend(tokenElement);
-            tokenElement.classList.add('new-token-animation');
-        });
-
-        // ✅ Limit feed length to 50 tokens
-        const MAX_FEED_LENGTH = 50;
-        while (feedContainer.children.length > MAX_FEED_LENGTH) {
-            const lastChild = feedContainer.lastChild;
-            displayedTokens.delete(lastChild.dataset.mint);
-            feedContainer.removeChild(lastChild);
         }
-
-    } catch (err) {
-        console.error("❌ Fetch Error:", err);
-        if (isInitialLoad && statusElement) {
-            statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
-        }
-    }
-        }
-
-
 
         
         function createTokenElement(token) {
@@ -297,4 +281,3 @@ document.addEventListener("DOMContentLoaded", () => {
         fetchNewsData();
     }
 });
-
