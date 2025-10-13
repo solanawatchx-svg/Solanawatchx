@@ -161,64 +161,62 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-async function fetchLiveTokens() {
+
+        async function fetchLiveTokens() {
     try {
         statusElement.style.display = 'block';
         statusElement.textContent = 'Fetching live tokens...';
 
         const response = await fetch('https://api.solanawatchx.site/live-tokens');
         if (!response.ok) throw new Error('Failed to fetch live tokens');
-
         const { tokens: rawData } = await response.json();
         statusElement.style.display = 'none';
 
-        // ✅ Sort tokens by creationTime (newest first)
-        const data = rawData
-            .sort((a, b) => b.creationTime - a.creationTime)
-            .map(t => ({
-                coinMint: t.coinMint,
-                name: t.name,
-                ticker: t.ticker,
-                imageUrl: t.imageUrl
-                    ? `https://api.solanawatchx.site/image-proxy?url=${encodeURIComponent(t.imageUrl)}`
-                    : null,
-                marketCap: t.marketCap,
-                volume: t.volume,
-                twitter: t.twitter,
-                telegram: t.telegram,
-                website: t.website,
-                creationTime: t.creationTime
-            }));
+        // ⚡ Filter FIRST — ignore already-shown mints before sorting
+        const unseen = rawData.filter(t => !displayedTokens.has(t.coinMint));
+        if (unseen.length === 0) return;
 
-        // ✅ Only add tokens not already displayed
-        const newTokens = data.filter(t => !displayedTokens.has(t.coinMint));
-        if (newTokens.length === 0) return;
+        // ⚡ Sort only those new tokens by creation time (newest first)
+        unseen.sort((a, b) => b.creationTime - a.creationTime);
 
-        // ✅ Mark them as displayed (don’t delete old ones)
+        // ⚡ Normalize the data
+        const newTokens = unseen.map(t => ({
+            coinMint: t.coinMint,
+            name: t.name,
+            ticker: t.ticker,
+            imageUrl: t.imageUrl
+                ? `https://api.solanawatchx.site/image-proxy?url=${encodeURIComponent(t.imageUrl)}`
+                : null,
+            marketCap: t.marketCap,
+            volume: t.volume,
+            twitter: t.twitter,
+            telegram: t.telegram,
+            website: t.website,
+            creationTime: t.creationTime
+        }));
+
+        // ⚡ Mark all new tokens as displayed
         newTokens.forEach(t => displayedTokens.add(t.coinMint));
 
-        // ✅ Keep feed length under control (remove oldest DOM items only)
+        // ⚡ Limit DOM cards (keep newest 300)
         const MAX_CARDS = 300;
-        const currentCards = feedContainer.children.length;
-        if (currentCards > MAX_CARDS) {
-            const excess = currentCards - MAX_CARDS;
-            for (let i = 0; i < excess; i++) {
-                feedContainer.removeChild(feedContainer.lastChild);
-            }
+        while (feedContainer.children.length > MAX_CARDS) {
+            feedContainer.removeChild(feedContainer.lastChild);
         }
 
-        // ✅ Add new tokens at top without disturbing old ones
-        for (let i = newTokens.length - 1; i >= 0; i--) {
-            const tokenElement = createTokenElement(newTokens[i]);
-            feedContainer.prepend(tokenElement);
-            tokenElement.classList.add('new-token-animation');
-        }
+        // ⚡ Append newest first at the top — no reverse loop
+        newTokens.forEach(token => {
+            const el = createTokenElement(token);
+            feedContainer.prepend(el);
+            el.classList.add('new-token-animation');
+        });
 
     } catch (err) {
-        console.error("❌ Fetch Error:", err);
+        console.error('❌ Fetch Error:', err);
         statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
     }
-}
+        }
+
 
         function createTokenElement(token) {
             const card = document.createElement('div');
