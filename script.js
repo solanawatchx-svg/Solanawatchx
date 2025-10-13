@@ -161,68 +161,44 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
+                async function fetchLiveTokens() {
+            try {
+                const response = await fetch("https://api.solanawatchx.site/live-tokens");
+                if (!response.ok) throw new Error('Failed to fetch live tokens');
+                const { tokens } = await response.json();
+                
+                if (isInitialLoad) {
+                    if(statusElement) statusElement.style.display = 'none';
+                    isInitialLoad = false;
+                }
 
-async function fetchLiveTokens() {
-    try {
-        statusElement.style.display = 'block';
-        statusElement.textContent = 'Fetching live tokens...';
+                const newTokens = tokens.filter(t => !displayedTokens.has(t.coinMint));
+                if (newTokens.length === 0) return;
 
-        const response = await fetch('https://api.solanawatchx.site/live-tokens');
-        if (!response.ok) throw new Error('Failed to fetch live tokens');
+                newTokens.forEach(t => displayedTokens.add(t.coinMint));
+                
+                if (feedContainer.children.length > 50) {
+                    while (feedContainer.children.length > 40) {
+                        const oldMint = feedContainer.lastChild.dataset.mint;
+                        if(oldMint) displayedTokens.delete(oldMint);
+                        feedContainer.removeChild(feedContainer.lastChild);
+                    }
+                }
 
-        const { tokens: rawData } = await response.json();
-        statusElement.style.display = 'none';
-
-        // ✅ Sort tokens by creationTime (newest first)
-        const data = rawData
-            .sort((a, b) => b.creationTime - a.creationTime)
-            .map(t => ({
-                coinMint: t.coinMint,
-                name: t.name,
-                ticker: t.ticker,
-                imageUrl: t.imageUrl
-                    ? `https://api.solanawatchx.site/image-proxy?url=${encodeURIComponent(t.imageUrl)}`
-                    : null,
-                marketCap: t.marketCap,
-                volume: t.volume,
-                twitter: t.twitter,
-                telegram: t.telegram,
-                website: t.website,
-                creationTime: t.creationTime
-            }));
-
-        // ✅ Only add tokens not already displayed
-        const newTokens = data.filter(t => !displayedTokens.has(t.coinMint));
-        if (newTokens.length === 0) return;
-
-        // ✅ Mark them as displayed (don’t delete old ones)
-        newTokens.forEach(t => displayedTokens.add(t.coinMint));
-
-        // ✅ Keep feed length under control (remove oldest DOM items only)
-        const MAX_CARDS = 300;
-        const currentCards = feedContainer.children.length;
-        if (currentCards > MAX_CARDS) {
-            const excess = currentCards - MAX_CARDS;
-            for (let i = 0; i < excess; i++) {
-                feedContainer.removeChild(feedContainer.lastChild);
+                for (let i = newTokens.length - 1; i >= 0; i--) {
+                    const tokenElement = createTokenElement(newTokens[i]);
+                    feedContainer.prepend(tokenElement);
+                    tokenElement.classList.add('new-token-animation');
+                }
+            } catch (err) {
+                console.error("❌ Fetch Error:", err);
+                if(isInitialLoad && statusElement){
+                    statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
+                }
             }
         }
 
-        // ✅ Add new tokens at top without disturbing old ones
-        for (let i = newTokens.length - 1; i >= 0; i--) {
-            const tokenElement = createTokenElement(newTokens[i]);
-            feedContainer.prepend(tokenElement);
-            tokenElement.classList.add('new-token-animation');
-        }
-
-    } catch (err) {
-        console.error("❌ Fetch Error:", err);
-        statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
-    }
-}
-
         
-
         function createTokenElement(token) {
             const card = document.createElement('div');
             card.className = 'token-card rounded-lg p-3 sm:p-4';
