@@ -181,8 +181,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 if (feedContainer.children.length > 50) {
                     while (feedContainer.children.length > 40) {
-                        const oldMint = feedContainer.lastChild.dataset.mint;
-                        if(oldMint) displayedTokens.delete(oldMint);
                         feedContainer.removeChild(feedContainer.lastChild);
                     }
                 }
