@@ -186,12 +186,30 @@ document.addEventListener("DOMContentLoaded", () => {
                         feedContainer.removeChild(feedContainer.lastChild);
                     }
                 }
-
+                
+                // 🧠 Use a temporary fragment to avoid layout reflow
+                const fragment = document.createDocumentFragment();
                 for (let i = newTokens.length - 1; i >= 0; i--) {
                     const tokenElement = createTokenElement(newTokens[i]);
-                    feedContainer.prepend(tokenElement);
-                    tokenElement.classList.add('new-token-animation');
+                    tokenElement.style.opacity = "0"; // hide until inserted
+                    fragment.prepend(tokenElement);
                 }
+                
+                // Insert all at once — smoother
+                feedContainer.prepend(fragment);
+                
+                // Animate only the new ones
+                requestAnimationFrame(() => {
+                    newTokens.forEach(t => {
+                        const el = feedContainer.querySelector(`[data-mint="${t.coinMint}"]`);
+                        if (el) {
+                            el.classList.add('new-token-animation');
+                            el.style.opacity = "1";
+                        }
+                    });
+                });
+
+                
             } catch (err) {
                 console.error("❌ Fetch Error:", err);
                 if(isInitialLoad && statusElement){
