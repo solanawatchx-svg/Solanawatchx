@@ -176,7 +176,7 @@ async function fetchLiveTokens() {
         if (tokens.length === 0) return;
 
         // No need to sort client-side—the endpoint already sorts newest first (descending creationTime)
-        // tokens.sort((a, b) => b.creationTime - a.creationTime); // Comment this out
+         tokens.sort((a, b) => b.creationTime - a.creationTime); // Comment this out
         
         
         const newTokens = [];
