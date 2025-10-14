@@ -164,6 +164,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function fetchLiveTokens() {
     try {
+        // new: keep full token objects for sorting across fetches
+        const displayedTokensObjects = [];
         const response = await fetch("https://api.solanawatchx.site/live-tokens");
         if (!response.ok) throw new Error('Failed to fetch live tokens');
         const { tokens } = await response.json();
@@ -188,10 +190,28 @@ async function fetchLiveTokens() {
             if (!displayedTokens.has(token.coinMint)) {
                 newTokens.push(token);
                 displayedTokens.add(token.coinMint);
+
+              displayedTokensObjects.push(token); // keep full object
             } //else {
                 //break;
             //}
         }
+
+
+
+        // Step 1: sort all displayed tokens newest → oldest
+displayedTokensObjects.sort((a,b) => b.creationTime - a.creationTime);
+
+// Step 2: clear current feed
+feedContainer.innerHTML = "";
+
+// Step 3: render all tokens in correct order
+for (const token of displayedTokensObjects) {
+    const el = createTokenElement(token);
+    feedContainer.appendChild(el);
+}
+
+
         
         if (newTokens.length === 0) return;
         
@@ -202,11 +222,11 @@ async function fetchLiveTokens() {
             //tokenElement.classList.add('new-token-animation');
         //}
 
-for (let i = newTokens.length - 1; i >= 0; i--) {
-    const el = createTokenElement(newTokens[i]);
-    feedContainer.prepend(el);
-    el.classList.add('new-token-animation');
-}
+//for (let i = newTokens.length - 1; i >= 0; i--) {
+    //const el = createTokenElement(newTokens[i]);
+   // feedContainer.prepend(el);
+   // el.classList.add('new-token-animation');
+//}
 
 
         
