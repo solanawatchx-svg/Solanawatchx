@@ -162,10 +162,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
+
+const displayedTokensObjects = [];
 async function fetchLiveTokens() {
     try {
         // new: keep full token objects for sorting across fetches
-        const displayedTokensObjects = [];
         const response = await fetch("https://api.solanawatchx.site/live-tokens");
         if (!response.ok) throw new Error('Failed to fetch live tokens');
         const { tokens } = await response.json();
