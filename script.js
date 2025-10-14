@@ -176,29 +176,28 @@ async function fetchLiveTokens() {
         if (tokens.length === 0) return;
 
         // No need to sort client-side—the endpoint already sorts newest first (descending creationTime)
-        //tokens.sort((a, b) => b.creationTime - a.creationTime); // Comment this out
+        // tokens.sort((a, b) => b.creationTime - a.creationTime); // Comment this out
         
         
-        // No need to sort client-side — the endpoint already returns newest first (descending creationTime)
+        const newTokens = [];
+        for (const token of tokens) {
+            if (!displayedTokens.has(token.coinMint)) {
+                newTokens.push(token);
+                displayedTokens.add(token.coinMint);
+            } else {
+                break;
+            }
+        }
+        
+        if (newTokens.length === 0) return;
+        
+        Prepend only the new tokens (newest will be first in newTokens)
+        for (let i = newTokens.length - 1; i >= 0; i--) {
+            const tokenElement = createTokenElement(newTokens[i]);
+            feedContainer.prepend(tokenElement);
+            tokenElement.classList.add('new-token-animation');
+        }
 
-const newTokens = [];
-for (const token of tokens) {
-    if (!displayedTokens.has(token.coinMint)) {
-        newTokens.push(token);
-        displayedTokens.add(token.coinMint);
-    } else {
-        break;
-    }
-}
-
-if (newTokens.length === 0) return;
-
-// ✅ Prepend tokens in forward order so newest appears on top
-for (let i = 0; i < newTokens.length; i++) {
-    const tokenElement = createTokenElement(newTokens[i]);
-    feedContainer.prepend(tokenElement);
-    tokenElement.classList.add('new-token-animation');
-}
 
         
         const MAX_FEED_LENGTH = 50;
