@@ -162,44 +162,53 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-                async function fetchLiveTokens() {
-            try {
-                const response = await fetch("https://api.solanawatchx.site/live-tokens");
-                if (!response.ok) throw new Error('Failed to fetch live tokens');
-                const { tokens } = await response.json();
-                
-                if (isInitialLoad) {
-                    if(statusElement) statusElement.style.display = 'none';
-                    isInitialLoad = false;
-                }
+async function fetchLiveTokens() {
+    try {
+        const response = await fetch("https://api.solanawatchx.site/live-tokens");
+        if (!response.ok) throw new Error('Failed to fetch live tokens');
+        const { tokens } = await response.json();
+        
+        if (isInitialLoad) {
+            if(statusElement) statusElement.style.display = 'none';
+            isInitialLoad = false;
+        }
 
-                //const newTokens = tokens.filter(t => !displayedTokens.has(t.coinMint));
-                //if (newTokens.length === 0) return;
+        if (tokens.length === 0) return;
 
-                //newTokens.forEach(t => displayedTokens.add(t.coinMint));
-                if (tokens.length === 0) return;
+        // No need to sort client-side—the endpoint already sorts newest first (descending creationTime)
+        // tokens.sort((a, b) => b.creationTime - a.creationTime); // Comment this out
 
-                // Sort new tokens by creationTime (newest first)
-                tokens.sort((a, b) => b.creationTime - a.creationTime);
-
-                // Prepend each new token to the feed (so newest are on top)
-                for (let i = tokens.length - 1; i >= 0; i--) {
-                    const tokenElement = createTokenElement(tokens[i]);
-                    feedContainer.prepend(tokenElement);
-                    tokenElement.classList.add('new-token-animation');
-                }
-                
-                const MAX_FEED_LENGTH = 50;
-                while (feedContainer.children.length > MAX_FEED_LENGTH) {
-                    feedContainer.removeChild(feedContainer.lastChild);
-                }
-            } catch (err) {
-                console.error("❌ Fetch Error:", err);
-                if(isInitialLoad && statusElement){
-                    statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
-                }
+        const newTokens = [];
+        for (const token of tokens) {
+            if (!displayedTokens.has(token.coinMint)) {
+                newTokens.push(token);
+                displayedTokens.add(token.coinMint);
+            } else {
+                // Hit a known token—stop, as the rest should be older/known
+                break;
             }
         }
+
+        if (newTokens.length === 0) return;
+
+        // Prepend only the new tokens (newest will be first in newTokens)
+        for (let i = newTokens.length - 1; i >= 0; i--) { // Reverse to prepend in original order (newest on top)
+            const tokenElement = createTokenElement(newTokens[i]);
+            feedContainer.prepend(tokenElement);
+            tokenElement.classList.add('new-token-animation');
+        }
+        
+        const MAX_FEED_LENGTH = 50;
+        while (feedContainer.children.length > MAX_FEED_LENGTH) {
+            feedContainer.removeChild(feedContainer.lastChild);
+        }
+    } catch (err) {
+        console.error("❌ Fetch Error:", err);
+        if(isInitialLoad && statusElement){
+            statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
+        }
+    }
+}
 
         
         function createTokenElement(token) {
