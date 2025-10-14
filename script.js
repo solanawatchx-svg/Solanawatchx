@@ -162,50 +162,45 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-async function fetchLiveTokens() {
-    try {
-        const response = await fetch("https://api.solanawatchx.site/live-tokens");
-        if (!response.ok) throw new Error('Failed to fetch live tokens');
-        const { tokens } = await response.json();
-        
-        if (isInitialLoad) {
-            if(statusElement) statusElement.style.display = 'none';
-            isInitialLoad = false;
-        }
+                async function fetchLiveTokens() {
+            try {
+                const response = await fetch("https://api.solanawatchx.site/live-tokens");
+                if (!response.ok) throw new Error('Failed to fetch live tokens');
+                const { tokens } = await response.json();
+                
+                if (isInitialLoad) {
+                    if(statusElement) statusElement.style.display = 'none';
+                    isInitialLoad = false;
+                }
 
-        if (tokens.length === 0) return;
+                //const newTokens = tokens.filter(t => !displayedTokens.has(t.coinMint));
+                //if (newTokens.length === 0) return;
 
-        // 🎯 CRITICAL: Filter out tokens already in the feed
-        const newTokens = tokens.filter(t => !displayedTokens.has(t.coinMint));
-        
-        if (newTokens.length === 0) return; // No new tokens? Do nothing!
+                //newTokens.forEach(t => displayedTokens.add(t.coinMint));
+                if (tokens.length === 0) return;
 
-        // Mark new tokens as displayed
-        newTokens.forEach(t => displayedTokens.add(t.coinMint));
+                // Sort new tokens by creationTime (newest first)
+                tokens.sort((a, b) => b.creationTime - a.creationTime);
 
-        // Sort by newest first
-        newTokens.sort((a, b) => b.creationTime - a.creationTime);
-
-        // Add ONLY new tokens
-        newTokens.forEach(token => {
-            const tokenElement = createTokenElement(token);
-            feedContainer.prepend(tokenElement);
-            tokenElement.classList.add('new-token-animation');
-        });
-        
-        // Clean up old tokens
-        const MAX_FEED_LENGTH = 50;
-        while (feedContainer.children.length > MAX_FEED_LENGTH) {
-            const removed = feedContainer.lastChild;
-            if (removed.dataset.mint) {
-                displayedTokens.delete(removed.dataset.mint); // Clean up Set too!
+                // Prepend each new token to the feed (so newest are on top)
+                for (let i = tokens.length - 1; i >= 0; i--) {
+                    const tokenElement = createTokenElement(tokens[i]);
+                    feedContainer.prepend(tokenElement);
+                    tokenElement.classList.add('new-token-animation');
+                }
+                
+                const MAX_FEED_LENGTH = 50;
+                while (feedContainer.children.length > MAX_FEED_LENGTH) {
+                    feedContainer.removeChild(feedContainer.lastChild);
+                }
+            } catch (err) {
+                console.error("❌ Fetch Error:", err);
+                if(isInitialLoad && statusElement){
+                    statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
+                }
             }
-            feedContainer.removeChild(removed);
         }
-    } catch (err) {
-        console.error("❌ Fetch Error:", err);
-    }
-}
+
         
         function createTokenElement(token) {
             const card = document.createElement('div');
