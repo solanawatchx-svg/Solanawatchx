@@ -184,6 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // Prepend each new token to the feed (so newest are on top)
                 for (let i = tokens.length - 1; i >= 0; i--) {
+                    if (feedContainer.querySelector(`[data-mint="${tokens[i].coinMint}"]`)) continue;
                     const tokenElement = createTokenElement(tokens[i]);
                     feedContainer.prepend(tokenElement);
                     tokenElement.classList.add('new-token-animation');
