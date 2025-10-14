@@ -177,14 +177,14 @@ async function fetchLiveTokens() {
 
         // No need to sort client-side—the endpoint already sorts newest first (descending creationTime)
         // tokens.sort((a, b) => b.creationTime - a.creationTime); // Comment this out
-
+        
+        
         const newTokens = [];
-        for (const token of tokens) {
+        for (const token of tokens.reverse()) { // Reverse the endpoint tokens while iterating
             if (!displayedTokens.has(token.coinMint)) {
                 newTokens.push(token);
                 displayedTokens.add(token.coinMint);
             } else {
-                // Hit a known token—stop, as the rest should be older/known
                 break;
             }
         }
