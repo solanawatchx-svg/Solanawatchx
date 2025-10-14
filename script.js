@@ -202,11 +202,10 @@ async function fetchLiveTokens() {
             //tokenElement.classList.add('new-token-animation');
         //}
 
-        newTokens.sort((a,b) => b.creationTime - a.creationTime); // newest -> oldest
-        for (let i = newTokens.length - 1; i >= 0; i--) {
-            const el = createTokenElement(newTokens[i]); // oldest -> newest
-            feedContainer.prepend(el);
-            el.classList.add('new-token-animation');
+        for (let i = 0; i < newTokens.length; i++) {
+  const el = createTokenElement(newTokens[i]);
+  feedContainer.prepend(el);
+  el.classList.add('new-token-animation');
         }
 
 
