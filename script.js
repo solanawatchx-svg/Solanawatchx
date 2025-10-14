@@ -169,7 +169,7 @@ async function fetchLiveTokens() {
         const { tokens } = await response.json();
 
 
-        tokens.sort((a, b) => b.creationTime - a.creationTime);
+ 
 
 
         if (isInitialLoad) {
