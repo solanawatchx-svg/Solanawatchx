@@ -192,8 +192,8 @@ async function fetchLiveTokens() {
         if (newTokens.length === 0) return;
 
         // Prepend only the new tokens (newest will be first in newTokens)
-        for (let i = newTokens.length - 1; i >= 0; i--) { // Reverse to prepend in original order (newest on top)
-            const tokenElement = createTokenElement(newTokens[i]);
+        for (const token of newTokens) {
+            const tokenElement = createTokenElement(token);
             feedContainer.prepend(tokenElement);
             tokenElement.classList.add('new-token-animation');
         }
