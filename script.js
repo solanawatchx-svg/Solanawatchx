@@ -167,7 +167,11 @@ async function fetchLiveTokens() {
         const response = await fetch("https://api.solanawatchx.site/live-tokens");
         if (!response.ok) throw new Error('Failed to fetch live tokens');
         const { tokens } = await response.json();
-        
+
+
+        tokens.sort((a, b) => b.creationTime - a.creationTime);
+
+
         if (isInitialLoad) {
             if(statusElement) statusElement.style.display = 'none';
             isInitialLoad = false;
