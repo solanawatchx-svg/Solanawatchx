@@ -84,8 +84,19 @@ body {
     opacity: 1;
     transform: translateY(0);
 }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-.new-token-animation { animation: fadeIn 0.5s ease-out forwards; }
+@keyframes fadeIn { 
+    from { opacity: 0; transform: translateY(-10px); } 
+    to { opacity: 1; transform: translateY(0); } 
+}
+.new-token-animation { 
+    animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+}
+#token-feed { 
+    transition: opacity 0.15s ease-in-out; 
+}
+#token-feed.updating { 
+    opacity: 0.95; 
+}
 #token-feed::-webkit-scrollbar { width: 8px; }
 #token-feed::-webkit-scrollbar-track { background: #10121a; }
 #token-feed::-webkit-scrollbar-thumb { background: #2a2d3e; border-radius: 4px; }
