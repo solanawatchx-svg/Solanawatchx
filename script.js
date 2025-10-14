@@ -192,25 +192,11 @@ async function fetchLiveTokens() {
         if (newTokens.length === 0) return;
         
         //Prepend only the new tokens (newest will be first in newTokens)
-        //for (let i = newTokens.length - 1; i >= 0; i--) {
-            //const tokenElement = createTokenElement(newTokens[i]);
-            //feedContainer.prepend(tokenElement);
-            //tokenElement.classList.add('new-token-animation');
-        //}
-
-        // Create a document fragment to hold new tokens for efficient DOM insertion
-const fragment = document.createDocumentFragment();
-
-// Loop through newTokens from newest to oldest (the natural array order)
-for (const token of newTokens) {
-    const tokenElement = createTokenElement(token);
-    tokenElement.classList.add('new-token-animation');
-    // Append to the fragment, preserving the [Newest, Newer, New] order
-    fragment.appendChild(tokenElement); 
-}
-
-// Prepend the entire fragment at once. This is faster and smoother.
-feedContainer.prepend(fragment);
+        for (let i = newTokens.length - 1; i >= 0; i--) {
+            const tokenElement = createTokenElement(newTokens[i]);
+            feedContainer.prepend(tokenElement);
+            tokenElement.classList.add('new-token-animation');
+        }
 
 
         
