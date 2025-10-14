@@ -180,7 +180,7 @@ async function fetchLiveTokens() {
         
         
         const newTokens = [];
-        for (const token of tokens.reverse()) { // Reverse the endpoint tokens while iterating
+        for (const token of tokens) {
             if (!displayedTokens.has(token.coinMint)) {
                 newTokens.push(token);
                 displayedTokens.add(token.coinMint);
