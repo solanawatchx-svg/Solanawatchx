@@ -188,9 +188,9 @@ async function fetchLiveTokens() {
             if (!displayedTokens.has(token.coinMint)) {
                 newTokens.push(token);
                 displayedTokens.add(token.coinMint);
-            } else {
-                break;
-            }
+            } //else {
+                //break;
+            //}
         }
         
         if (newTokens.length === 0) return;
@@ -202,11 +202,11 @@ async function fetchLiveTokens() {
             //tokenElement.classList.add('new-token-animation');
         //}
 
-        for (let i = 0; i < newTokens.length; i++) {
-  const el = createTokenElement(newTokens[i]);
-  feedContainer.prepend(el);
-  el.classList.add('new-token-animation');
-        }
+for (let i = newTokens.length - 1; i >= 0; i--) {
+    const el = createTokenElement(newTokens[i]);
+    feedContainer.prepend(el);
+    el.classList.add('new-token-animation');
+}
 
 
         
