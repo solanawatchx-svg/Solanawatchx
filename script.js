@@ -191,6 +191,8 @@ async function fetchLiveTokens() {
 
         if (newTokens.length === 0) return;
 
+        newTokens.reverse();
+        
         // Prepend only the new tokens (newest will be first in newTokens)
         for (let i = newTokens.length - 1; i >= 0; i--) {
             const tokenElement = createTokenElement(newTokens[i]);
