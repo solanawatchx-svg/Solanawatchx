@@ -196,10 +196,17 @@ async function fetchLiveTokens() {
         if (newTokens.length === 0) return;
         
         //Prepend only the new tokens (newest will be first in newTokens)
+        //for (let i = newTokens.length - 1; i >= 0; i--) {
+            //const tokenElement = createTokenElement(newTokens[i]);
+            //feedContainer.prepend(tokenElement);
+            //tokenElement.classList.add('new-token-animation');
+        //}
+
+        newTokens.sort((a,b) => b.creationTime - a.creationTime); // newest -> oldest
         for (let i = newTokens.length - 1; i >= 0; i--) {
-            const tokenElement = createTokenElement(newTokens[i]);
-            feedContainer.prepend(tokenElement);
-            tokenElement.classList.add('new-token-animation');
+            const el = createTokenElement(newTokens[i]); // oldest -> newest
+            feedContainer.prepend(el);
+            el.classList.add('new-token-animation');
         }
 
 
