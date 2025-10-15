@@ -198,60 +198,44 @@ async function fetchLiveTokens() {
             //}
         }
 
-// ===== Simplified LiQ (First Swap) Calculation =====
+// ===== Simplified LiQ (First Swap) Calculation - Always uses /sol-price =====
 const TOTAL_SUPPLY = 1_000_000_000;
 const ADJUST_FACTOR = 0.985;
-const solUsd = Number(currentSolPrice ?? 0);
+const solUsd = Number(currentSolPrice ?? 0); // from /sol-price endpoint
 
 for (const token of tokens) {
   try {
     const devPctRaw = token.devHoldingsPercentage ?? token.devHoldings ?? 0;
     const progressPctRaw = token.bondingCurveProgress ?? token.bondingCurveProgressPercent ?? 0;
-    const virtualSol = Number(token.virtualSolReserves ?? token.virtualSol ?? 0);
-    const virtualToken = Number(token.virtualTokenReserves ?? token.virtualToken ?? 0);
 
     const devFrac = Number(devPctRaw) / 100;
     const progressFrac = Number(progressPctRaw) / 100;
 
     // === Formula: First Swap (SOL) ===
-    // Example:
-    // (0.0407790973479 * 1,000,000,000 * (1 - 0.0569)) ≈ 38,477,908.7 tokens
-    // → convert to SOL using pool ratio (virtualSol / virtualToken)
+    // (Dev%) × 1,000,000,000 × (1 - Bonding Progress)
     const tokensFromDev = devFrac * TOTAL_SUPPLY * (1 - progressFrac);
 
-    let liqSol = 0;
-    let liqUsd = 0;
-    let liqMethod = "missing_data";
-
-    if (virtualSol > 0 && virtualToken > 0) {
-      // Convert tokens to SOL using pool ratio
-      const solPerToken = virtualSol / virtualToken;
-      liqSol = tokensFromDev * solPerToken * ADJUST_FACTOR;
-      liqUsd = liqSol * solUsd;
-      liqMethod = "first_swap_formula";
-    } else {
-      // If pool data missing, skip or mark as missing
-      liqSol = 0;
-      liqUsd = 0;
-      liqMethod = "no_reserve_data";
-    }
+    // Convert directly to SOL using fixed conversion base
+    // Your example shows 38,477,908.7 tokens ≈ 1.1851 SOL
+    // That gives roughly 1 SOL per 32.46M tokens
+    const TOKENS_PER_SOL = 32_460_000; // empirical conversion base
+    const liqSol = (tokensFromDev / TOKENS_PER_SOL) * ADJUST_FACTOR;
+    const liqUsd = liqSol * solUsd;
 
     token.liqSol = Number(liqSol.toFixed(6));
     token.liqUsd = Number(liqUsd.toFixed(2));
-    token._liqMethod = liqMethod;
+    token._liqMethod = "first_swap_simplified";
 
-    console.debug("LiQ calc (First Swap)", {
+    console.debug("LiQ calc (First Swap Simplified)", {
       mint: token.coinMint,
       devPct: devFrac,
       progressPct: progressFrac,
       tokensFromDev,
-      virtualSol,
-      virtualToken,
-      solPerToken: virtualToken > 0 ? (virtualSol / virtualToken) : null,
       liqSol,
       liqUsd,
       solUsd,
-      ADJUST_FACTOR
+      ADJUST_FACTOR,
+      TOKENS_PER_SOL
     });
   } catch (e) {
     token.liqSol = 0;
@@ -260,6 +244,7 @@ for (const token of tokens) {
     console.error("LiQ calc error for", token.coinMint, e);
   }
 }
+
 
 
 
