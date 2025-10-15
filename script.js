@@ -210,13 +210,14 @@ const solUsd = Number(currentSolPrice ?? 0);
 // Primary SOL conversion: solPerToken = virtualSolReserves / virtualTokenReserves
 // Fallback: use marketCap USD -> token price USD = marketCap / TOTAL_SUPPLY; token price SOL = tokenPriceUsd / solUsd
 
-for (const token of tokens) {
+// IMPORTANT: compute for the array you render (displayedTokensObjects), so previously displayed tokens also get liq updated
+for (const token of displayedTokensObjects) {
   try {
     const devPct = Number(token.devHoldingsPercentage ?? token.devHoldings ?? 0);
     const progressPct = Number(token.bondingCurveProgress ?? token.bondingCurveProgressPercent ?? 0);
 
-    const devFrac = devPct / 100;
-    const progressFrac = progressPct / 100;
+    const devFrac = isFinite(devPct) ? devPct / 100 : 0;
+    const progressFrac = isFinite(progressPct) ? progressPct / 100 : 0;
 
     const tokensFromDev = devFrac * TOTAL_SUPPLY * (1 - progressFrac); // token count
 
@@ -225,28 +226,27 @@ for (const token of tokens) {
     const virtualToken = Number(token.virtualTokenReserves ?? token.virtualToken ?? 0);
 
     let liqSol = 0;
-
     if (virtualToken > 0 && virtualSol > 0) {
+      // pool price governs conversion
       const solPerToken = virtualSol / virtualToken;
       liqSol = tokensFromDev * solPerToken;
       token._liqMethod = 'reserves';
     } else {
-      // Fallback: use marketCap -> USD per token -> SOL per token
+      // Fallback: derive token USD price from marketCap and convert to SOL using live SOL price
       const marketCapUsd = Number(token.marketCap ?? 0);
       if (marketCapUsd > 0 && solUsd > 0) {
-        // USD value of tokensFromDev = marketCap * (tokensFromDev / TOTAL_SUPPLY)
-        const usdValue = marketCapUsd * (tokensFromDev / TOTAL_SUPPLY);
-        liqSol = usdValue / solUsd;
+        const tokenPriceUsd = marketCapUsd / TOTAL_SUPPLY;               // USD per token
+        const usdValue = tokenPriceUsd * tokensFromDev;                 // USD value of tokensFromDev
+        liqSol = usdValue / solUsd;                                     // SOL equivalent
         token._liqMethod = 'marketcap_fallback';
       } else {
-        // no reliable way to convert -> keep 0
         liqSol = 0;
         token._liqMethod = 'missing_data';
       }
     }
 
     // store both SOL and USD versions (round nicely)
-    token.liqSol = Number(liqSol.toFixed(6));
+    token.liqSol = Number(liqSol ? Number(liqSol.toFixed(6)) : 0);
     token.liqUsd = Number(Math.abs((liqSol * solUsd) || 0).toFixed(2));
 
   } catch (e) {
@@ -257,8 +257,8 @@ for (const token of tokens) {
   }
 }
 
-// debug output (remove when satisfied)
-console.debug('LiQ debug sample:', tokens.slice(0,6).map(t => ({
+// debug sample (keep while testing)
+console.debug('LiQ debug sample:', displayedTokensObjects.slice(0,6).map(t => ({
   mint: t.coinMint,
   devPct: t.devHoldingsPercentage ?? t.devHoldings,
   progress: t.bondingCurveProgress,
