@@ -229,7 +229,7 @@ for (const token of displayedTokensObjects) {
     if (virtualToken > 0 && virtualSol > 0) {
       // pool price governs conversion
       const solPerToken = virtualSol / virtualToken;
-      liqSol = tokensFromDev * solPerToken;
+      liqSol = tokensFromDev * solPerToken * 0.985;
       token._liqMethod = 'reserves';
     } else {
       // Fallback: derive token USD price from marketCap and convert to SOL using live SOL price
