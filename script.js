@@ -163,11 +163,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
+const displayedTokensObjects = [];
 async function fetchLiveTokens() {
     try {
+        // new: keep full token objects for sorting across fetches
         const response = await fetch("https://api.solanawatchx.site/live-tokens");
         if (!response.ok) throw new Error('Failed to fetch live tokens');
         const { tokens } = await response.json();
+
+
+ 
+
 
         if (isInitialLoad) {
             if(statusElement) statusElement.style.display = 'none';
@@ -176,27 +182,58 @@ async function fetchLiveTokens() {
 
         if (tokens.length === 0) return;
 
-        const newTokens = tokens.filter(token => !displayedTokens.has(token.coinMint));
-
-        if (newTokens.length > 0) {
-            // Newest tokens are first, so iterate in reverse to prepend oldest-new first
-            for (let i = newTokens.length - 1; i >= 0; i--) {
-                const token = newTokens[i];
-                const tokenElement = createTokenElement(token);
-                feedContainer.prepend(tokenElement);
-                tokenElement.classList.add('new-token-animation');
+        // No need to sort client-side—the endpoint already sorts newest first (descending creationTime)
+        // tokens.sort((a, b) => b.creationTime - a.creationTime); // Comment this out
+        
+        
+        const newTokens = [];
+        for (const token of tokens) {
+            if (!displayedTokens.has(token.coinMint)) {
+                newTokens.push(token);
                 displayedTokens.add(token.coinMint);
-            }
+
+              displayedTokensObjects.push(token); // keep full object
+            } //else {
+                //break;
+            //}
         }
+
+
+
+        // Step 1: sort all displayed tokens newest → oldest
+displayedTokensObjects.sort((a,b) => b.creationTime - a.creationTime);
+
+// Step 2: clear current feed
+feedContainer.innerHTML = "";
+
+// Step 3: render all tokens in correct order
+for (const token of displayedTokensObjects) {
+    const el = createTokenElement(token);
+    feedContainer.appendChild(el);
+}
+
+
+        
+        if (newTokens.length === 0) return;
+        
+        //Prepend only the new tokens (newest will be first in newTokens)
+        //for (let i = newTokens.length - 1; i >= 0; i--) {
+            //const tokenElement = createTokenElement(newTokens[i]);
+            //feedContainer.prepend(tokenElement);
+            //tokenElement.classList.add('new-token-animation');
+        //}
+
+//for (let i = newTokens.length - 1; i >= 0; i--) {
+    //const el = createTokenElement(newTokens[i]);
+   // feedContainer.prepend(el);
+   // el.classList.add('new-token-animation');
+//}
+
+
         
         const MAX_FEED_LENGTH = 50;
         while (feedContainer.children.length > MAX_FEED_LENGTH) {
-            const tokenToRemove = feedContainer.lastChild;
-            const mintToRemove = tokenToRemove.dataset.mint;
-            if (mintToRemove) {
-                displayedTokens.delete(mintToRemove);
-            }
-            feedContainer.removeChild(tokenToRemove);
+            feedContainer.removeChild(feedContainer.lastChild);
         }
     } catch (err) {
         console.error("❌ Fetch Error:", err);
