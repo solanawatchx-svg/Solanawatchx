@@ -198,75 +198,69 @@ async function fetchLiveTokens() {
             //}
         }
 
-// ===== Replace existing LiQ calculation with this robust block =====
+// ===== Simplified LiQ (First Swap) Calculation =====
 const TOTAL_SUPPLY = 1_000_000_000;
-const ADJUST_FACTOR = 0.985; // tweak this up/down if you still need micro-adjustment
-
-// Ensure we have a sol price (0 is allowed but will make marketcap fallback skip)
+const ADJUST_FACTOR = 0.985;
 const solUsd = Number(currentSolPrice ?? 0);
 
 for (const token of tokens) {
   try {
-    // read inputs defensively
     const devPctRaw = token.devHoldingsPercentage ?? token.devHoldings ?? 0;
     const progressPctRaw = token.bondingCurveProgress ?? token.bondingCurveProgressPercent ?? 0;
-    const devPct = Number(devPctRaw);
-    const progressPct = Number(progressPctRaw);
-
-    const devFrac = devPct / 100;
-    const progressFrac = progressPct / 100;
-    const tokensFromDev = devFrac * TOTAL_SUPPLY * (1 - progressFrac); // token count
-
-    // pick reserve fields (support both naming styles)
     const virtualSol = Number(token.virtualSolReserves ?? token.virtualSol ?? 0);
     const virtualToken = Number(token.virtualTokenReserves ?? token.virtualToken ?? 0);
 
-    let liqSol = 0;
-    let liqMethod = 'missing_data';
+    const devFrac = Number(devPctRaw) / 100;
+    const progressFrac = Number(progressPctRaw) / 100;
 
-    if (virtualToken > 0 && virtualSol > 0) {
+    // === Formula: First Swap (SOL) ===
+    // Example:
+    // (0.0407790973479 * 1,000,000,000 * (1 - 0.0569)) ≈ 38,477,908.7 tokens
+    // → convert to SOL using pool ratio (virtualSol / virtualToken)
+    const tokensFromDev = devFrac * TOTAL_SUPPLY * (1 - progressFrac);
+
+    let liqSol = 0;
+    let liqUsd = 0;
+    let liqMethod = "missing_data";
+
+    if (virtualSol > 0 && virtualToken > 0) {
+      // Convert tokens to SOL using pool ratio
       const solPerToken = virtualSol / virtualToken;
       liqSol = tokensFromDev * solPerToken * ADJUST_FACTOR;
-      liqMethod = 'reserves';
+      liqUsd = liqSol * solUsd;
+      liqMethod = "first_swap_formula";
     } else {
-      // fallback: use marketCap -> USD per token -> SOL per token (only if solUsd available)
-      const marketCapUsd = Number(token.marketCap ?? 0);
-      if (marketCapUsd > 0 && solUsd > 0) {
-        const usdValue = marketCapUsd * (tokensFromDev / TOTAL_SUPPLY); // USD value of those tokens
-        liqSol = (usdValue / solUsd) * ADJUST_FACTOR;
-        liqMethod = 'marketcap_fallback';
-      } else {
-        liqSol = 0;
-        liqMethod = 'missing_data';
-      }
+      // If pool data missing, skip or mark as missing
+      liqSol = 0;
+      liqUsd = 0;
+      liqMethod = "no_reserve_data";
     }
 
-    token.liqSol = Number(liqSol || 0); // raw SOL (not rounded here)
-    token.liqUsd = Number(Math.abs((liqSol * solUsd) || 0).toFixed(2));
+    token.liqSol = Number(liqSol.toFixed(6));
+    token.liqUsd = Number(liqUsd.toFixed(2));
     token._liqMethod = liqMethod;
 
-    // debug - devtool console will show exact inputs & outputs
-    console.debug('LiQ calc', {
+    console.debug("LiQ calc (First Swap)", {
       mint: token.coinMint,
-      devPct,
-      progressPct,
+      devPct: devFrac,
+      progressPct: progressFrac,
       tokensFromDev,
       virtualSol,
       virtualToken,
-      solUsd,
-      liqMethod,
       solPerToken: virtualToken > 0 ? (virtualSol / virtualToken) : null,
       liqSol,
-      liqUsd: token.liqUsd,
+      liqUsd,
+      solUsd,
       ADJUST_FACTOR
     });
   } catch (e) {
     token.liqSol = 0;
     token.liqUsd = 0;
-    token._liqMethod = 'error';
-    console.error('LiQ calc error for', token.coinMint, e);
+    token._liqMethod = "error";
+    console.error("LiQ calc error for", token.coinMint, e);
   }
 }
+
 
 
 
