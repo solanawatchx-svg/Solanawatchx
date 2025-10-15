@@ -198,57 +198,68 @@ async function fetchLiveTokens() {
             //}
         }
 
-// --- calculate First Swap (SOL) and LiQ (USD) using exact formula ---
-// TOTAL token supply used by pump.fun pools:
+// ===== Replace existing LiQ calculation with this robust block =====
 const TOTAL_SUPPLY = 1_000_000_000;
+const ADJUST_FACTOR = 0.985; // tweak this up/down if you still need micro-adjustment
 
-// current SOL USD price (may be 0 if fetch failed)
+// Ensure we have a sol price (0 is allowed but will make marketcap fallback skip)
 const solUsd = Number(currentSolPrice ?? 0);
 
-// We'll compute both token.liqSol (SOL) and token.liqUsd (USD)
-// Formula (tokens_from_dev) = dev% * TOTAL_SUPPLY * (1 - progress%)
-// Primary SOL conversion: solPerToken = virtualSolReserves / virtualTokenReserves
-// Fallback: use marketCap USD -> token price USD = marketCap / TOTAL_SUPPLY; token price SOL = tokenPriceUsd / solUsd
-
-// IMPORTANT: compute for the array you render (displayedTokensObjects), so previously displayed tokens also get liq updated
-for (const token of displayedTokensObjects) {
+for (const token of tokens) {
   try {
-    const devPct = Number(token.devHoldingsPercentage ?? token.devHoldings ?? 0);
-    const progressPct = Number(token.bondingCurveProgress ?? token.bondingCurveProgressPercent ?? 0);
+    // read inputs defensively
+    const devPctRaw = token.devHoldingsPercentage ?? token.devHoldings ?? 0;
+    const progressPctRaw = token.bondingCurveProgress ?? token.bondingCurveProgressPercent ?? 0;
+    const devPct = Number(devPctRaw);
+    const progressPct = Number(progressPctRaw);
 
-    const devFrac = isFinite(devPct) ? devPct / 100 : 0;
-    const progressFrac = isFinite(progressPct) ? progressPct / 100 : 0;
-
+    const devFrac = devPct / 100;
+    const progressFrac = progressPct / 100;
     const tokensFromDev = devFrac * TOTAL_SUPPLY * (1 - progressFrac); // token count
 
-    // Primary: use virtual reserves if available
+    // pick reserve fields (support both naming styles)
     const virtualSol = Number(token.virtualSolReserves ?? token.virtualSol ?? 0);
     const virtualToken = Number(token.virtualTokenReserves ?? token.virtualToken ?? 0);
 
     let liqSol = 0;
+    let liqMethod = 'missing_data';
+
     if (virtualToken > 0 && virtualSol > 0) {
-      // pool price governs conversion
       const solPerToken = virtualSol / virtualToken;
-      liqSol = tokensFromDev * solPerToken * 0.985;
-      token._liqMethod = 'reserves';
+      liqSol = tokensFromDev * solPerToken * ADJUST_FACTOR;
+      liqMethod = 'reserves';
     } else {
-      // Fallback: derive token USD price from marketCap and convert to SOL using live SOL price
+      // fallback: use marketCap -> USD per token -> SOL per token (only if solUsd available)
       const marketCapUsd = Number(token.marketCap ?? 0);
       if (marketCapUsd > 0 && solUsd > 0) {
-        const tokenPriceUsd = marketCapUsd / TOTAL_SUPPLY;               // USD per token
-        const usdValue = tokenPriceUsd * tokensFromDev;                 // USD value of tokensFromDev
-        liqSol = usdValue / solUsd;                                     // SOL equivalent
-        token._liqMethod = 'marketcap_fallback';
+        const usdValue = marketCapUsd * (tokensFromDev / TOTAL_SUPPLY); // USD value of those tokens
+        liqSol = (usdValue / solUsd) * ADJUST_FACTOR;
+        liqMethod = 'marketcap_fallback';
       } else {
         liqSol = 0;
-        token._liqMethod = 'missing_data';
+        liqMethod = 'missing_data';
       }
     }
 
-    // store both SOL and USD versions (round nicely)
-    token.liqSol = Number(liqSol ? Number(liqSol.toFixed(6)) : 0);
+    token.liqSol = Number(liqSol || 0); // raw SOL (not rounded here)
     token.liqUsd = Number(Math.abs((liqSol * solUsd) || 0).toFixed(2));
+    token._liqMethod = liqMethod;
 
+    // debug - devtool console will show exact inputs & outputs
+    console.debug('LiQ calc', {
+      mint: token.coinMint,
+      devPct,
+      progressPct,
+      tokensFromDev,
+      virtualSol,
+      virtualToken,
+      solUsd,
+      liqMethod,
+      solPerToken: virtualToken > 0 ? (virtualSol / virtualToken) : null,
+      liqSol,
+      liqUsd: token.liqUsd,
+      ADJUST_FACTOR
+    });
   } catch (e) {
     token.liqSol = 0;
     token.liqUsd = 0;
@@ -256,19 +267,6 @@ for (const token of displayedTokensObjects) {
     console.error('LiQ calc error for', token.coinMint, e);
   }
 }
-
-// debug sample (keep while testing)
-console.debug('LiQ debug sample:', displayedTokensObjects.slice(0,6).map(t => ({
-  mint: t.coinMint,
-  devPct: t.devHoldingsPercentage ?? t.devHoldings,
-  progress: t.bondingCurveProgress,
-  virtualSol: t.virtualSolReserves ?? t.virtualSol,
-  virtualToken: t.virtualTokenReserves ?? t.virtualToken,
-  liqSol: t.liqSol,
-  liqUsd: t.liqUsd,
-  method: t._liqMethod
-})));
-
 
 
 
