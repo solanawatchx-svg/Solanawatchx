@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function calculateLiquidity(token, solPrice) {
         try {
             // Assume the required fields exist on the token object from the live feed API
-            const devHoldingsPercent = token.devHoldingsPercent || token.dev_holdings_percent || 0.05; 
+            const devHoldingsPercent = token.devHoldingsPercent || token.dev_holdings_percent || 0; 
             const totalSupply = token.totalSupply || token.total_supply || 0; 
             const bondingCurveProgress = token.bondingCurveProgress || token.bonding_curve_progress || 0; // 0 to 1 range
 
@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (feedContainer) {
         const POLLING_INTERVAL_MS = 4000;
         const GEMINI_API_KEY = ""; // Canvas injects this.
-        // Updated to the recommended model
+        // NOTE: Updated model to the latest recommended for stability
         const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
         const displayedTokens = new Set();
         const insightsCache = new Map();
@@ -164,13 +164,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         async function fetchTokenInsight(token) {
-            // Insight prompt now uses the calculated liquidity and progress
-            const systemPrompt = "You are a witty, street-smart crypto analyst providing quick, actionable, and engaging one-liner summaries for new tokens. Keep the analysis creative, fun, and non-financial advice. Do not use markdown (e.g., **). Keep it under 20 words.";
-            
+            const systemPrompt = "You are a witty, slightly cynical crypto market analyst. Provide a brief, one-sentence speculative analysis for a new token from pump.fun. The analysis should be creative and mention potential risks or upsides in a fun, meme-worthy manner. Do not give financial advice. Keep it under 20 words.";
+            // Now using the calculated liquidity and progress in the prompt
             const liquidityDisplay = token.calculatedLiquidity !== null ? formatNum(token.calculatedLiquidity) : '--';
+            const userQuery = `Analyze this token: Name: ${token.name}, Ticker: $${token.ticker}, Initial Liquidity: ${liquidityDisplay}, Bonding Curve Progress: ${token.progressPercent}%. Summarize its initial status.`;
 
-            const userQuery = `Analyze this token: Name: ${token.name}, Ticker: $${token.ticker}, Calculated Initial Liquidity: ${liquidityDisplay}. Bonding Curve Progress: ${token.progressPercent}%. Summarize its status.`;
-            
             const payload = {
                 contents: [{ parts: [{ text: userQuery }] }],
                 systemInstruction: { parts: [{ text: systemPrompt }] },
@@ -179,7 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     temperature: 0.8
                 }
             };
-            
+
             const MAX_RETRIES = 5;
             for (let i = 0; i < MAX_RETRIES; i++) {
                 try {
@@ -206,75 +204,89 @@ document.addEventListener("DOMContentLoaded", () => {
             return "AI analysis unavailable.";
         }
 
+// RESTORED USER'S ORIGINAL LIVE TOKEN FETCH LOGIC
+const displayedTokensObjects = [];
+async function fetchLiveTokens() {
+    if (!currentSolPrice) {
+        console.log("Waiting for SOL price to start data fetch...");
+        return;
+    }
 
-        // The original logic using displayedTokensObjects for full re-sort/re-render is removed.
-        // We will use the standard live feed pattern (prepend new, limit total) for better performance.
-        async function fetchLiveTokens() {
-            if (!currentSolPrice) {
-                console.log("Waiting for SOL price to start data fetch...");
-                return;
-            }
+    try {
+        const response = await fetch("https://api.solanawatchx.site/live-tokens");
+        if (!response.ok) throw new Error('Failed to fetch live tokens');
+        const { tokens } = await response.json();
 
-            try {
-                // Fetch data from your endpoint
-                const response = await fetch("https://api.solanawatchx.site/live-tokens");
-                if (!response.ok) throw new Error('Failed to fetch live tokens');
-                const { tokens } = await response.json();
 
-                if (isInitialLoad) {
-                    if(statusElement) statusElement.style.display = 'none';
-                    isInitialLoad = false;
-                }
+ 
+        if (isInitialLoad) {
+            if(statusElement) statusElement.style.display = 'none';
+            isInitialLoad = false;
+        }
 
-                if (tokens.length === 0) return;
-                
-                const newTokens = [];
-                // Process all fetched tokens to calculate liquidity and determine if new
-                for (const token of tokens) {
-                    const mint = token.coinMint;
-                    
-                    // Calculate Liquidity and Progress
-                    const calculatedLiquidity = calculateLiquidity(token, currentSolPrice);
-                    const progressPercent = ((token.bondingCurveProgress || token.bonding_curve_progress || 0) * 100).toFixed(1);
+        if (tokens.length === 0) return;
 
-                    // Attach calculated values to the token object for consistent rendering/insight
-                    token.calculatedLiquidity = calculatedLiquidity;
-                    token.progressPercent = progressPercent;
+        // No need to sort client-side—the endpoint already sorts newest first (descending creationTime)
+        
+        
+        const newTokens = [];
+        for (const token of tokens) {
+             // 1. Calculate Liquidity and Progress
+            const calculatedLiquidity = calculateLiquidity(token, currentSolPrice);
+            const progressPercent = ((token.bondingCurveProgress || token.bonding_curve_progress || 0) * 100).toFixed(1);
 
-                    // Only process new tokens that have a valid liquidity calculation
-                    if (!displayedTokens.has(mint) && calculatedLiquidity !== null) {
-                        newTokens.push(token);
-                        displayedTokens.add(mint);
-                    }
-                }
+            // Attach calculated values to the token object for consistent rendering/insight
+            token.calculatedLiquidity = calculatedLiquidity;
+            token.progressPercent = progressPercent;
 
-                if (newTokens.length === 0) return;
-                
-                // Prepend only the new tokens (newest will be first in newTokens)
-                for (let i = newTokens.length - 1; i >= 0; i--) {
-                    const el = createTokenElement(newTokens[i]);
-                    feedContainer.prepend(el);
-                    el.classList.add('new-token-animation');
-                }
+            if (!displayedTokens.has(token.coinMint) && calculatedLiquidity !== null) {
+                newTokens.push(token);
+                displayedTokens.add(token.coinMint);
 
-                const MAX_FEED_LENGTH = 50;
-                while (feedContainer.children.length > MAX_FEED_LENGTH) {
-                    feedContainer.removeChild(feedContainer.lastChild);
-                }
-            } catch (err) {
-                console.error("❌ Fetch Error:", err);
-                if(isInitialLoad && statusElement){
-                    statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
-                }
+              displayedTokensObjects.push(token); // keep full object
             }
         }
+
+
+        // Step 1: sort all displayed tokens newest → oldest
+        displayedTokensObjects.sort((a,b) => b.creationTime - a.creationTime);
+
+        // Step 2: clear current feed
+        feedContainer.innerHTML = "";
+
+        // Step 3: render all tokens in correct order
+        for (const token of displayedTokensObjects) {
+            const el = createTokenElement(token);
+            feedContainer.appendChild(el);
+        }
+
+        
+        if (newTokens.length === 0) return;
+        
+        const MAX_FEED_LENGTH = 50;
+        // The original logic here was complex due to re-render. We ensure displayedTokensObjects
+        // is always capped to maintain performance, and the render loop handles the rest.
+        while (displayedTokensObjects.length > MAX_FEED_LENGTH) {
+            const removedToken = displayedTokensObjects.pop();
+            displayedTokens.delete(removedToken.coinMint);
+        }
+
+    } catch (err) {
+        console.error("❌ Fetch Error:", err);
+        if(isInitialLoad && statusElement){
+            statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
+        }
+    }
+}
+// END RESTORED USER'S ORIGINAL LIVE TOKEN FETCH LOGIC
 
         
         function createTokenElement(token) {
             const card = document.createElement('div');
             card.className = 'token-card rounded-lg p-3 sm:p-4';
             card.dataset.mint = token.coinMint;
-
+            
+            // USE CALCULATED LIQUIDITY & PROGRESS
             const liquidityDisplay = token.calculatedLiquidity !== null ? formatNum(token.calculatedLiquidity) : '--';
             const progressDisplay = `${token.progressPercent}%`;
 
@@ -286,59 +298,18 @@ document.addEventListener("DOMContentLoaded", () => {
             const socialsHTML = Object.entries({twitter: token.twitter, telegram: token.telegram, website: token.website}).filter(([,url]) => url).map(([name, url]) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white" title="${name.charAt(0).toUpperCase() + name.slice(1)}">${socialIcons[name] || ''}</a>`).join('');
             const pumpLink = `https://pump.fun/${token.coinMint}`;
             const dexLink = `https://dexscreener.com/solana/${token.coinMint}`;
-
-            card.innerHTML = `
-                <div class="grid grid-cols-12 gap-3 items-center">
-                    <div class="col-span-2 sm:col-span-1">
-                        <img id="img-${token.coinMint}" alt="${token.ticker}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover">
-                    </div>
-                    <div class="col-span-5 sm:col-span-5 flex flex-col justify-center">
-                        <div class="flex items-center space-x-2">
-                            <p class="font-bold text-white truncate">${token.ticker}</p>
-                            <div class="flex items-center space-x-1.5">${socialsHTML}</div>
-                        </div>
-                        <div class="flex items-center space-x-2 text-xs text-gray-400 flex-wrap">
-                            <span class="truncate block max-w-[80px] sm:max-w-[120px]" title="${token.name}">${token.name}</span>
-                            <span class="text-gray-500">•</span>
-                            <span>${formatAge(token.creationTime)}</span>
-                            <div class="copy-address-container flex items-center space-x-1 cursor-pointer hover:text-white" title="Copy Address">
-                                <span class="font-mono token-address">${token.coinMint.substring(0, 4)}...${token.coinMint.substring(token.coinMint.length - 4)}</span>
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- NEW METRICS BLOCK: Showing Liquidity (calculated) and Progress (instead of MC/Vol) -->
-                    <div class="hidden sm:col-span-3 sm:grid grid-cols-2 gap-2 text-xs text-center">
-                        <div>
-                            <div class="text-gray-500">Liquidity</div>
-                            <div class="font-semibold text-green-400">${liquidityDisplay}</div>
-                        </div>
-                        <div>
-                            <div class="text-gray-500">Progress</div>
-                            <div class="font-semibold text-indigo-400">${progressDisplay}</div>
-                        </div>
-                    </div>
-                    <!-- END NEW METRICS BLOCK -->
-
-                    <div class="col-span-5 sm:col-span-3 flex items-center justify-end space-x-2">
-                        <a href="${pumpLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-2 rounded-md" title="Buy on Pump.fun"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 13.5L12 18L7.5 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
-                        <a href="${dexLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-2 rounded-md" title="View on DexScreener"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg></a>
-                        <button class="get-insight-btn ai-btn text-xs font-bold px-3 py-1.5 rounded-md" title="Get AI Insight">AI</button>
-                    </div>
-                </div>
-                <div class="insight-content hidden mt-3 p-3 bg-gray-900/50 rounded text-sm text-purple-300 italic"></div>
-            `;
             
+            // REMOVED MC & V - ADDED LIQUIDITY & PROGRESS
+            card.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center"><div class="col-span-2 sm:col-span-1"><img id="img-${token.coinMint}" alt="${token.ticker}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"></div><div class="col-span-5 sm:col-span-5 flex flex-col justify-center"><div class="flex items-center space-x-2"><p class="font-bold text-white truncate">${token.ticker}</p><div class="flex items-center space-x-1.5">${socialsHTML}</div></div><div class="flex items-center space-x-2 text-xs text-gray-400 flex-wrap"><span class="truncate block max-w-[80px] sm:max-w-[120px]" title="${token.name}">${token.name}</span><span class="text-gray-500">•</span><span>${formatAge(token.creationTime)}</span><div class="copy-address-container flex items-center space-x-1 cursor-pointer hover:text-white" title="Copy Address"><span class="font-mono token-address">${token.coinMint.substring(0, 4)}...${token.coinMint.substring(token.coinMint.length - 4)}</span><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div></div></div><div class="hidden sm:col-span-3 sm:grid grid-cols-2 gap-2 text-xs text-center"><div><div class="text-gray-500">Liquidity</div><div class="font-semibold text-white">${liquidityDisplay}</div></div><div><div class="text-gray-500">Progress</div><div class="font-semibold text-white">${progressDisplay}</div></div></div><div class="col-span-5 sm:col-span-3 flex items-center justify-end space-x-2"><a href="${pumpLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-2 rounded-md" title="Buy on Pump.fun"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 13.5L12 18L7.5 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></a><a href="${dexLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-2 rounded-md" title="View on DexScreener"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg></a><button class="get-insight-btn ai-btn text-xs font-bold px-3 py-1.5 rounded-md" title="Get AI Insight">AI</button></div></div><div class="insight-content hidden mt-3 p-3 bg-gray-900/50 rounded text-sm text-purple-300 italic"></div>`;
             const imgElement = card.querySelector(`#img-${token.coinMint}`);
             loadImageWithFallback(imgElement, token.imageUrl, token.coinMint);
             const insightBtn = card.querySelector('.get-insight-btn');
             const insightContent = card.querySelector('.insight-content');
             const copyContainer = card.querySelector('.copy-address-container');
             const addressText = card.querySelector('.token-address');
-
             copyContainer.addEventListener('click', (e) => { 
                 e.stopPropagation(); 
+                
                 // Using document.execCommand for better iFrame compatibility
                 const tempInput = document.createElement('textarea');
                 tempInput.value = token.coinMint;
@@ -346,12 +317,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 tempInput.select();
                 document.execCommand('copy');
                 document.body.removeChild(tempInput);
-
+                
                 const original = addressText.textContent; 
                 addressText.textContent = "Copied!"; 
                 setTimeout(() => { addressText.textContent = original; }, 1500); 
             });
-
             insightBtn.addEventListener('click', async (e) => { 
                 e.stopPropagation(); 
                 insightBtn.disabled = true; 
@@ -361,7 +331,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (insightsCache.has(token.coinMint)) { 
                     insightText = insightsCache.get(token.coinMint); 
                 } else { 
-                    // Pass the token object which now includes calculatedLiquidity
                     insightText = await fetchTokenInsight(token); 
                     insightsCache.set(token.coinMint, insightText); 
                 } 
@@ -370,7 +339,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 insightContent.classList.remove('hidden'); 
                 insightBtn.classList.add('hidden'); 
             });
-
             return card;
         }
 
@@ -428,3 +396,4 @@ document.addEventListener("DOMContentLoaded", () => {
         fetchNewsData();
     }
 });
+
