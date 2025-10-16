@@ -232,6 +232,12 @@ for (const token of tokens) {
         }
 
         const firstSwapSolValue = (devTokenAmount * progressNum) / (100 * devPctNum);
+        if (!devPctNum || devPctNum < 0.01) {
+    token.liqSol = 0;
+    token.liqUsd = 0;
+    token._liqMethod = "invalid_dev_pct";
+    continue;
+        }
         token.liqSol = Number(firstSwapSolValue.toFixed(9));
 
         // --- FIXED: Use marketCapUsd variable defined above ---
