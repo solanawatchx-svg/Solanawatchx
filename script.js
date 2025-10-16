@@ -220,7 +220,7 @@ const firstSwapSol = -firstSwapTokenCount;
 
 
     token.liqSol = Number(firstSwapSol.toFixed(9)); // SOL value (negative if dev -> curve)
-    token.liqUsd = Number((Math.abs(firstSwapSol) * solUsd).toFixed(2)); // convert to USD
+    const tokenPrice = marketCapUsd / TOTAL_SUPPLY; token.liqUsd = Number((Math.abs(firstSwapSol) * tokenPrice).toFixed(2));
     token._liqMethod = "first_swap_formula";
 
     console.debug("LiQ calc (First Swap)", {
