@@ -1,4 +1,3 @@
-```javascript
 document.addEventListener("DOMContentLoaded", () => {
     // ===============================
     // --- SUPABASE CONFIG (only for whitelist) ---
