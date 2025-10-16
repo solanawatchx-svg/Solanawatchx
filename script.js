@@ -199,43 +199,35 @@ async function fetchLiveTokens() {
         }
 
 // ===== Simplified LiQ (First Swap) Calculation - Always uses /sol-price =====
-const TOTAL_SUPPLY = 1_000_000_000;
-const ADJUST_FACTOR = 0.985;
+//const TOTAL_SUPPLY = 1_000_000_000;
+//const ADJUST_FACTOR = 0.985;
+// ===== Pump.fun First Swap Liquidity Calculation (SOL-only) =====
 const solUsd = Number(currentSolPrice ?? 0); // from /sol-price endpoint
 
 for (const token of tokens) {
   try {
-    const devPctRaw = token.devHoldingsPercentage ?? token.devHoldings ?? 0;
-    const progressPctRaw = token.bondingCurveProgress ?? token.bondingCurveProgressPercent ?? 0;
+    const devPct = Number(token.devHoldingsPercentage ?? token.devHoldings ?? 0);
+    const progressPct = Number(token.bondingCurveProgress ?? token.bondingCurveProgressPercent ?? 0);
+    const marketCapUsd = Number(token.marketCap ?? 0);
 
-    const devFrac = Number(devPctRaw) / 100;
-    const progressFrac = Number(progressPctRaw) / 100;
+    if (solUsd === 0) throw new Error("SOL price is zero, cannot calculate liquidity");
 
-    // === Formula: First Swap (SOL) ===
-    // (Dev%) × 1,000,000,000 × (1 - Bonding Progress)
-    const tokensFromDev = devFrac * TOTAL_SUPPLY * (1 - progressFrac);
+    // === Formula: first_swap_sol ===
+    // first_swap_sol = - (devHoldings% / 100) * marketCap_usd * (1 - bondingCurveProgress/100) / sol_price
+    const firstSwapSol = - (devPct / 100) * marketCapUsd * (1 - (progressPct / 100)) / solUsd;
 
-    // Convert directly to SOL using fixed conversion base
-    // Your example shows 38,477,908.7 tokens ≈ 1.1851 SOL
-    // That gives roughly 1 SOL per 32.46M tokens
-    const TOKENS_PER_SOL = 32_460_000; // empirical conversion base
-    const liqSol = (tokensFromDev / TOKENS_PER_SOL) * ADJUST_FACTOR;
-    const liqUsd = liqSol * solUsd;
+    token.liqSol = Number(firstSwapSol.toFixed(9)); // SOL value (negative if dev -> curve)
+    token.liqUsd = Number((Math.abs(firstSwapSol) * solUsd).toFixed(2)); // convert to USD
+    token._liqMethod = "first_swap_formula";
 
-    token.liqSol = Number(liqSol.toFixed(6));
-    token.liqUsd = Number(liqUsd.toFixed(2));
-    token._liqMethod = "first_swap_simplified";
-
-    console.debug("LiQ calc (First Swap Simplified)", {
+    console.debug("LiQ calc (First Swap)", {
       mint: token.coinMint,
-      devPct: devFrac,
-      progressPct: progressFrac,
-      tokensFromDev,
-      liqSol,
-      liqUsd,
+      devPct,
+      progressPct,
+      marketCapUsd,
       solUsd,
-      ADJUST_FACTOR,
-      TOKENS_PER_SOL
+      liqSol: token.liqSol,
+      liqUsd: token.liqUsd
     });
   } catch (e) {
     token.liqSol = 0;
