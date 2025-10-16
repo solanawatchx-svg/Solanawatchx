@@ -242,7 +242,8 @@ for (const token of tokens) {
             // A more direct calculation would be:
             // token.liqUsd = Number((Math.abs(token.liqSol) * solUsd).toFixed(2));
             const tokenPriceUsd = marketCapUsd / TOTAL_SUPPLY;
-            token.liqUsd = Number((Math.abs(token.liqSol) * tokenPriceUsd).toFixed(2)); // Sticking to your original logic for now
+            const solUsd = Number(currentSolPrice ?? 0); 
+            token.liqUsd = Number((Math.abs(token.liqSol) * solUsd).toFixed(2)); // Sticking to your original logic for now
         }
 
         token._liqMethod = "dev_holdings_formula_backend";
