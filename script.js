@@ -245,14 +245,26 @@ for (const token of displayedTokensObjects) {
 
         
         function createTokenElement(token) {
-            const TOTAL_SUPPLY = 1000000000;
-            const CURVE_TOKENS = 793100000;
             let liquidity_sol = 0;
-            if (token.bondingCurveProgress > 0 && token.volume > 0 && token.devHoldingsPercentage > 0) {
-                const tokens_bought = token.bondingCurveProgress * CURVE_TOKENS;
-                const dev_tokens = token.devHoldingsPercentage * TOTAL_SUPPLY;
-                const dev_fraction = dev_tokens / tokens_bought;
-                liquidity_sol = dev_fraction * token.volume;
+            let dev_held = 0;
+            for (const h of token.holders) {
+                if (h.holderId === token.dev) {
+                    dev_held = h.totalTokenAmountHeld;
+                    break;
+                }
+            }
+            if (dev_held > 0) {
+                const TOKEN_DECIMALS = 6;
+                const dev_token_units = BigInt(Math.floor(dev_held * Math.pow(10, TOKEN_DECIMALS)));
+                const INITIAL_VIRTUAL_SOL = 30000000000n;
+                const INITIAL_VIRTUAL_TOKEN = 1073000000000000n;
+                const k = INITIAL_VIRTUAL_SOL * INITIAL_VIRTUAL_TOKEN;
+                const new_virtual_token = INITIAL_VIRTUAL_TOKEN - dev_token_units;
+                if (new_virtual_token > 0n) {
+                    const new_virtual_sol = k / new_virtual_token;
+                    const delta_lamports = new_virtual_sol - INITIAL_VIRTUAL_SOL;
+                    liquidity_sol = Number(delta_lamports) / 1e9;
+                }
             }
             const liquidityUSD = currentSolPrice ? liquidity_sol * currentSolPrice : 0;
 
