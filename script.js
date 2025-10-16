@@ -199,8 +199,8 @@ async function fetchLiveTokens() {
         }
 
 // ===== Simplified LiQ (First Swap) Calculation - Always uses /sol-price =====
-//const TOTAL_SUPPLY = 1_000_000_000;
-//const ADJUST_FACTOR = 0.985;
+const TOTAL_SUPPLY = 1_000_000_000;
+const ADJUST_FACTOR = 0.985;
 // ===== Pump.fun First Swap Liquidity Calculation (SOL-only) =====
 const solUsd = Number(currentSolPrice ?? 0); // from /sol-price endpoint
 
