@@ -214,7 +214,10 @@ for (const token of tokens) {
 
     // === Formula: first_swap_sol ===
     // first_swap_sol = - (devHoldings% / 100) * marketCap_usd * (1 - bondingCurveProgress/100) / sol_price
-    const firstSwapSol = - (devPct / 100) * marketCapUsd * (1 - (progressPct / 100)) / solUsd;
+// NEW LINE TO REPLACE IT WITH:
+const firstSwapTokenCount = (devPct / 100) * TOTAL_SUPPLY * (1 - (progressPct / 100));
+const firstSwapSol = -firstSwapTokenCount;
+
 
     token.liqSol = Number(firstSwapSol.toFixed(9)); // SOL value (negative if dev -> curve)
     token.liqUsd = Number((Math.abs(firstSwapSol) * solUsd).toFixed(2)); // convert to USD
