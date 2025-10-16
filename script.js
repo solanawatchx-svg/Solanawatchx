@@ -201,7 +201,7 @@ async function fetchLiveTokens() {
 // ===== Simplified LiQ (First Swap) Calculation - Always uses /sol-price =====
 const TOTAL_SUPPLY = 1_000_000_000;
 const ADJUST_FACTOR = 0.985;
-// ===== Pump.fun First Swap Liquidity Calculation (Direct Dev Holdings) =====
+// ===== Pump.fun First Swap Liquidity Calculation (Direct Dev Holdings) - DEBUG VERSION =====
 const solUsd = Number(currentSolPrice ?? 0); // from /sol-price endpoint
 
 for (const token of tokens) {
@@ -239,31 +239,37 @@ for (const token of tokens) {
     // Assign the negative token count to firstSwapSol (output is a token amount)
     const firstSwapSol = -firstSwapTokenCount;
 
-    // === Calculate the correct LiQ USD based on the token count ===
+    // === Calculate the correct LiQ USD based on the token count (Option B Logic) ===
     
     // 1. Calculate the token's current price
     if (marketCapUsd === 0 || TOTAL_SUPPLY === 0) {
-        // Cannot calculate a meaningful USD price without market cap
         throw new Error("Market cap or total supply is zero, cannot calculate USD price.");
     }
     const tokenPrice = marketCapUsd / TOTAL_SUPPLY;
     
-    // 2. Calculate the USD value of the token count
+    // 2. Calculate the USD value of the token count (The value to be displayed)
     const liqUsdValue = Math.abs(firstSwapSol) * tokenPrice;
 
 
+    // === Calculate USD using the SOL price (If 1 token = 1 SOL) - FOR DEBUGGING ===
+    // This is mathematically wrong, but is a common error to check against.
+    const debugSolPriceLiqUsd = Math.abs(firstSwapSol) * solUsd;
+
+
     // === Assign final values ===
-    token.liqSol = Number(firstSwapSol.toFixed(9)); // The token count (your "First Swap" amount), labeled as SOL
-    token.liqUsd = Number(liqUsdValue.toFixed(2)); // The correct USD value of that token count
+    token.liqSol = Number(firstSwapSol.toFixed(9)); 
+    // IMPORTANT: We use the correct token-price-based USD for the display value
+    token.liqUsd = Number(liqUsdValue.toFixed(2)); 
     token._liqMethod = "dev_holdings_direct";
 
-    console.debug("LiQ calc (Dev Holdings Direct)", {
+    // DEBUG LOG: Compare the two USD results to find the correct logic
+    console.debug("LiQ calc (Dev Holdings Direct) - DEBUG", {
       mint: token.coinMint,
       devAddress: token.dev,
-      tokenCount: firstSwapTokenCount,
-      tokenPrice: tokenPrice,
-      liqSol: token.liqSol,
-      liqUsd: token.liqUsd
+      tokenCount: firstSwapTokenCount.toFixed(2),
+      tokenPrice: tokenPrice.toExponential(4),
+      liqUsd_TokenPrice: liqUsdValue.toFixed(2),        // Value calculated using MarketCap/Supply
+      liqUsd_SolPrice_DEBUG: debugSolPriceLiqUsd.toFixed(2) // Value calculated using Tokens * SOL Price
     });
   } catch (e) {
     token.liqSol = 0;
@@ -272,6 +278,7 @@ for (const token of tokens) {
     console.error("LiQ calc error for", token.coinMint, e);
   }
 }
+
 
 
 
