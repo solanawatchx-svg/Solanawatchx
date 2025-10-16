@@ -377,4 +377,4 @@ for (const token of displayedTokensObjects) {
         fetchNewsData();
     }
 });
-```
+
