@@ -199,13 +199,7 @@ async function fetchLiveTokens() {
         }
 
 // ===== Simplified LiQ (First Swap) Calculation - Always uses /sol-price =====
-const TOTAL_SUPPLY = 1_000_000_000;
-const ADJUST_FACTOR = 0.985;
-// ===== Pump.fun First Swap Liquidity Calculation (Direct Dev Holdings) - DEBUG VERSION =====
-// ... inside fetchLiveTokens() after fetching tokens
-
-// ===== Pump.fun First Swap Liquidity Calculation (Direct Dev Holdings) =====
-// ===== Pump.fun First Swap Liquidity Calculation (Bonding Curve Formula - FIXED) =====
+// ===== Pump.fun First Swap Liquidity Calculation (New Dev Holdings Formula) =====
 const solUsd = Number(currentSolPrice ?? 0); // live SOL/USD from your API
 
 for (const token of tokens) {
@@ -213,30 +207,34 @@ for (const token of tokens) {
     // --- safely extract required fields ---
     const progressNum = Number(token.bondingCurveProgress || 0); // in %
     const marketCapUsd = Number(token.marketCap || 0);           // in USD
+    const devHoldingsPct = Number(token.devHoldingsPct || 0);    // in %, e.g., 4.88
     const tokenMint = token.coinMint || "unknown";
 
     // --- Step 1: convert MarketCap → SOL ---
     const marketCapSol = solUsd > 0 ? (marketCapUsd / solUsd) : 0;
 
-    // --- Step 2: Liquidity based on bonding curve progress (first swap) ---
-    const liqSol = (marketCapSol * progressNum) / 100;
+    // --- Step 2: First Swap SOL using new formula ---
+    // First Swap (SOL) = (Dev Holdings % / 100) × (1 - Bonding Curve Progress %) × Market Cap (SOL)
+    const progressFraction = progressNum / 100;
+    const devFraction = devHoldingsPct / 100;
+    const firstSwapSol = marketCapSol * devFraction * (1 - progressFraction);
 
     // --- Step 3: Convert SOL back to USD for UI ---
-    const liqUsd = liqSol * solUsd;
+    const firstSwapUsd = firstSwapSol * solUsd;
 
-    // --- Step 4: Round and assign ---
-    token.liqSol = Number(liqSol.toFixed(9));
-    token.liqUsd = Number(liqUsd.toFixed(2));
-    token._liqMethod = "bonding_curve_formula";
+    // --- Step 4: Round and assign (renamed for clarity) ---
+    token.firstSwapSol = Number(firstSwapSol.toFixed(9));
+    token.firstSwapUsd = Number(firstSwapUsd.toFixed(2));
+    token._liqMethod = "dev_holdings_formula";
 
     // --- Debug Log (shows full calculation + token address) ---
-    console.debug(`✅ LiQ (${tokenMint}) → ${token.liqSol} SOL / $${token.liqUsd}`);
+    console.debug(`✅ First Swap (${tokenMint}) → ${token.firstSwapSol} SOL / $${token.firstSwapUsd} | Dev%: ${devHoldingsPct}%, Progress: ${progressNum}%`);
 
   } catch (e) {
-    token.liqSol = 0;
-    token.liqUsd = 0;
+    token.firstSwapSol = 0;
+    token.firstSwapUsd = 0;
     token._liqMethod = "error_formula";
-    console.error("❌ LiQ formula error:", token.coinMint, e.message);
+    console.error("❌ First Swap formula error:", token.coinMint, e.message);
   }
 }
 
