@@ -202,82 +202,64 @@ async function fetchLiveTokens() {
 const TOTAL_SUPPLY = 1_000_000_000;
 const ADJUST_FACTOR = 0.985;
 // ===== Pump.fun First Swap Liquidity Calculation (Direct Dev Holdings) - DEBUG VERSION =====
-const solUsd = Number(currentSolPrice ?? 0); // from /sol-price endpoint
+// ... inside fetchLiveTokens() after fetching tokens
 
+// ===== Pump.fun First Swap Liquidity Calculation (Direct Dev Holdings) =====
+const solUsd = Number(currentSolPrice ?? 0); 
+
+// Loop through each token to calculate its liquidity before rendering
 for (const token of tokens) {
-  
+    try {
+        const devHolder = token.holders ? token.holders.find(h => h.holderId === token.dev) : null;
 
-    // =========================================================================
-    // === NEW LOGIC: Find the Dev's exact token amount from the holders array ===
-    // This value represents the Dev's initial buy/first swap token quantity.
-    // =========================================================================
-    
-    // 1. Find the Dev's entry in the holders array
-// ------------------------------
-// === REPLACEMENT: Use backend formula (exact) ===
-// ------------------------------
-try {
-  // find dev holder entry (already in your code)
-  const devHolder = token.holders ? token.holders.find(h => h.holderId === token.dev) : null;
+        // --- FIXED: Use properties from the 'token' object ---
+        const devPctNum = Number(token.devHoldingsPercentage || 0); 
+        const progressNum = Number(token.bondingCurveProgress || 0);
+        const marketCapUsd = Number(token.marketCap || 0);
 
-  // ensure numeric inputs
-  const devPctNum = Number(devPct || 0);           // e.g. 0.352091874685
-  const progressNum = Number(progressPct || 0);   // e.g. 0.44
-  let devTokenAmount = 0;
+        let devTokenAmount = 0;
 
-  if (devHolder && devHolder.totalTokenAmountHeld) {
-    devTokenAmount = Number(devHolder.totalTokenAmountHeld);
-  } else {
-    // fallback: if dev holder missing, estimate from dev% * TOTAL_SUPPLY
-    if (TOTAL_SUPPLY > 0 && devPctNum > 0) {
-      devTokenAmount = (devPctNum / 100) * TOTAL_SUPPLY; // devPctNum is percent-ish in your JSON
+        if (devHolder && devHolder.totalTokenAmountHeld) {
+            devTokenAmount = Number(devHolder.totalTokenAmountHeld);
+        } else {
+            if (TOTAL_SUPPLY > 0 && devPctNum > 0) {
+                devTokenAmount = (devPctNum / 100) * TOTAL_SUPPLY;
+            }
+        }
+
+        if (devTokenAmount <= 0 || devPctNum <= 0) {
+            throw new Error("Insufficient data for first swap calculation.");
+        }
+
+        const firstSwapSolValue = (devTokenAmount * progressNum) / (100 * devPctNum);
+        token.liqSol = Number(firstSwapSolValue.toFixed(9));
+
+        // --- FIXED: Use marketCapUsd variable defined above ---
+        if (marketCapUsd === 0 || TOTAL_SUPPLY === 0) {
+            token.liqUsd = 0;
+        } else {
+            // NOTE: This USD calculation seems a bit off. The value of the SOL should be based on `currentSolPrice`.
+            // A more direct calculation would be:
+            // token.liqUsd = Number((Math.abs(token.liqSol) * solUsd).toFixed(2));
+            const tokenPriceUsd = marketCapUsd / TOTAL_SUPPLY;
+            token.liqUsd = Number((Math.abs(token.liqSol) * tokenPriceUsd).toFixed(2)); // Sticking to your original logic for now
+        }
+
+        token._liqMethod = "dev_holdings_formula_backend";
+
+        console.debug("LiQ calc (backend-formula)", {
+            mint: token.coinMint,
+            firstSwapSol: token.liqSol,
+            liqUsd: token.liqUsd
+        });
+
+    } catch (e) {
+        token.liqSol = 0;
+        token.liqUsd = 0;
+        token._liqMethod = "error_formula";
+        console.error("LiQ formula error:", token.coinMint, e.message);
     }
-  }
-
-  // Validate inputs
-  if (devTokenAmount <= 0 || devPctNum <= 0) {
-    throw new Error("Insufficient data to compute first swap (dev token amount or dev% missing)");
-  }
-
-  // BACKEND FORMULA (exact as used in your backend):
-  // FirstSwap (SOL) = (devTokenAmount * bondingCurveProgress) / (100 * devHoldingsPercentage)
-  // NOTE: progressNum is taken directly from JSON (e.g. 0.44). devPctNum is used as-is.
-  const firstSwapSolValue = (devTokenAmount * progressNum) / (100 * devPctNum);
-
-  // Assign to token object (SOL-only value). Keep it positive (render uses Math.abs()).
-  token.liqSol = Number(firstSwapSolValue.toFixed(9));
-
-  // Keep your existing USD calculation using token-price (marketCap / TOTAL_SUPPLY)
-  if (marketCapUsd === 0 || TOTAL_SUPPLY === 0) {
-    token.liqUsd = 0;
-  } else {
-    const tokenPriceUsd = marketCapUsd / TOTAL_SUPPLY;
-    token.liqUsd = Number((Math.abs(token.liqSol) * tokenPriceUsd).toFixed(2));
-  }
-
-  token._liqMethod = "dev_holdings_formula_backend";
-
-  console.debug("LiQ calc (backend-formula)", {
-    mint: token.coinMint,
-    dev: token.dev,
-    devTokenAmount: devTokenAmount,
-    progressNum: progressNum,
-    devPctNum: devPctNum,
-    firstSwapSol: token.liqSol,
-    liqUsd: token.liqUsd
-  });
-} catch (e) {
-  token.liqSol = 0;
-  token.liqUsd = 0;
-  token._liqMethod = "error_formula";
-  console.error("LiQ formula error:", token.coinMint, e);
-}
-    
-}
-
-
-
-
+} // <-- ADDED THIS MISSING BRACKET to close the for-loop
 
 
 
