@@ -201,7 +201,7 @@ async function fetchLiveTokens() {
 // ===== Simplified LiQ (First Swap) Calculation - Always uses /sol-price =====
 const TOTAL_SUPPLY = 1_000_000_000;
 const ADJUST_FACTOR = 0.985;
-// ===== Pump.fun First Swap Liquidity Calculation (SOL-only) =====
+// ===== Pump.fun First Swap Liquidity Calculation (Direct Dev Holdings) =====
 const solUsd = Number(currentSolPrice ?? 0); // from /sol-price endpoint
 
 for (const token of tokens) {
@@ -210,25 +210,58 @@ for (const token of tokens) {
     const progressPct = Number(token.bondingCurveProgress ?? token.bondingCurveProgressPercent ?? 0);
     const marketCapUsd = Number(token.marketCap ?? 0);
 
-    if (solUsd === 0) throw new Error("SOL price is zero, cannot calculate liquidity");
+    // =========================================================================
+    // === NEW LOGIC: Find the Dev's exact token amount from the holders array ===
+    // This value represents the Dev's initial buy/first swap token quantity.
+    // =========================================================================
+    
+    // 1. Find the Dev's entry in the holders array
+    const devHolder = token.holders ? token.holders.find(h => h.holderId === token.dev) : null;
+    
+    let firstSwapTokenCount = 0;
 
-    // === Formula: first_swap_sol ===
-    // first_swap_sol = - (devHoldings% / 100) * marketCap_usd * (1 - bondingCurveProgress/100) / sol_price
-// NEW LINE TO REPLACE IT WITH:
-const firstSwapTokenCount = (devPct / 100) * TOTAL_SUPPLY * (1 - (progressPct / 100));
-const firstSwapSol = -firstSwapTokenCount;
+    if (devHolder) {
+        // Use the exact token amount from the holder object
+        firstSwapTokenCount = Number(devHolder.totalTokenAmountHeld || 0);
+    } else {
+        // Fallback: If the Dev holder entry is missing, use the devHoldingsPercentage fallback
+        if (TOTAL_SUPPLY > 0) {
+           const devFrac = devPct / 100;
+           firstSwapTokenCount = devFrac * TOTAL_SUPPLY;
+        }
+    }
+    
+    // Handle error if we still don't have a token count
+    if (firstSwapTokenCount === 0) {
+        throw new Error("Could not determine Dev's first swap token amount.");
+    }
+
+    // Assign the negative token count to firstSwapSol (output is a token amount)
+    const firstSwapSol = -firstSwapTokenCount;
+
+    // === Calculate the correct LiQ USD based on the token count ===
+    
+    // 1. Calculate the token's current price
+    if (marketCapUsd === 0 || TOTAL_SUPPLY === 0) {
+        // Cannot calculate a meaningful USD price without market cap
+        throw new Error("Market cap or total supply is zero, cannot calculate USD price.");
+    }
+    const tokenPrice = marketCapUsd / TOTAL_SUPPLY;
+    
+    // 2. Calculate the USD value of the token count
+    const liqUsdValue = Math.abs(firstSwapSol) * tokenPrice;
 
 
-    token.liqSol = Number(firstSwapSol.toFixed(9)); // SOL value (negative if dev -> curve)
-    const tokenPrice = marketCapUsd / TOTAL_SUPPLY; token.liqUsd = Number((Math.abs(firstSwapSol) * tokenPrice).toFixed(2));
-    token._liqMethod = "first_swap_formula";
+    // === Assign final values ===
+    token.liqSol = Number(firstSwapSol.toFixed(9)); // The token count (your "First Swap" amount), labeled as SOL
+    token.liqUsd = Number(liqUsdValue.toFixed(2)); // The correct USD value of that token count
+    token._liqMethod = "dev_holdings_direct";
 
-    console.debug("LiQ calc (First Swap)", {
+    console.debug("LiQ calc (Dev Holdings Direct)", {
       mint: token.coinMint,
-      devPct,
-      progressPct,
-      marketCapUsd,
-      solUsd,
+      devAddress: token.dev,
+      tokenCount: firstSwapTokenCount,
+      tokenPrice: tokenPrice,
       liqSol: token.liqSol,
       liqUsd: token.liqUsd
     });
