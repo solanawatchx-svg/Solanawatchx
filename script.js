@@ -205,10 +205,7 @@ const ADJUST_FACTOR = 0.985;
 const solUsd = Number(currentSolPrice ?? 0); // from /sol-price endpoint
 
 for (const token of tokens) {
-  try {
-    const devPct = Number(token.devHoldingsPercentage ?? token.devHoldings ?? 0);
-    const progressPct = Number(token.bondingCurveProgress ?? token.bondingCurveProgressPercent ?? 0);
-    const marketCapUsd = Number(token.marketCap ?? 0);
+  
 
     // =========================================================================
     // === NEW LOGIC: Find the Dev's exact token amount from the holders array ===
