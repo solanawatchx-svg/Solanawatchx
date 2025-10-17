@@ -99,6 +99,8 @@ body {
         zoom: 65%;
     }
 }
+
+/* === CORRECTED AND UPDATED NEWS SCROLLER STYLES === */
 .news-container {
     -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
     mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
@@ -118,27 +120,4 @@ body {
 }
 .news-panel:hover {
     transform: scale(1.03);
-}
-@media (max-width: 639px) {
-    /* 1. Reduce Image column width from 2 to 1 to reduce gap */
-    .token-card > div > div:nth-child(1) {
-        grid-column: span 1 / span 1 !important;
-    }
-    /* 2. Push Name/Details column closer (col-span-3) */
-    .token-card > div > div:nth-child(2) {
-        grid-column: span 3 / span 3 !important;
-    }
-    /* 3. Show Liquidity column (col-span-3) */
-    .token-card > div > div:nth-child(3) {
-        display: grid !important; 
-        grid-column: span 3 / span 3 !important; 
-    }
-    /* 4. Adjust Buttons column (col-span-4) */
-    .token-card > div > div:nth-child(4) {
-        grid-column: span 5 / span 5 !important; /* Adjusted to 5 to use the extra space */
-    }
-    /* 5. Minimize gap between columns */
-    .token-card > div {
-        gap: 0.25rem !important;
-    }
 }
