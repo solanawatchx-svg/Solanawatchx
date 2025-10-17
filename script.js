@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     // fetch immediately and every 30 seconds
     fetchSolPrice();
-    setInterval(fetchSolPrice, 30000);
+    setInterval(fetchSolPrice, 10000);
 
 
     
