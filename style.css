@@ -99,8 +99,6 @@ body {
         zoom: 65%;
     }
 }
-
-/* === CORRECTED AND UPDATED NEWS SCROLLER STYLES === */
 .news-container {
     -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
     mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
@@ -121,8 +119,18 @@ body {
 .news-panel:hover {
     transform: scale(1.03);
 }
-
-.token-card > div > div:nth-child(3) {
-    display: grid !important; 
+@media (max-width: 639px) {
+    .token-card > div > div:nth-child(3) {
+        display: grid !important; 
+        grid-column: span 3 / span 3 !important; 
+    }
+    .token-card > div > div:nth-child(2) {
+        grid-column: span 3 / span 3 !important;
+    }
+    .token-card > div > div:nth-child(4) {
+        grid-column: span 4 / span 4 !important;
+    }
+    .token-card > div {
+        gap: 0.25rem !important;
+    }
 }
-
