@@ -121,3 +121,8 @@ body {
 .news-panel:hover {
     transform: scale(1.03);
 }
+
+.token-card > div > div:nth-child(3) {
+    display: grid !important; 
+}
+
