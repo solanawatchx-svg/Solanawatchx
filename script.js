@@ -255,9 +255,10 @@ for (const token of displayedTokensObjects) {
             }
             if (dev_held > 0) {
                 const TOKEN_DECIMALS = 6;
-                const dev_token_units = BigInt(Math.floor(dev_held * Math.pow(10, TOKEN_DECIMALS)));
+                const multiplier = Math.pow(10, TOKEN_DECIMALS);
+                const dev_token_units = BigInt(Math.floor(dev_held * multiplier));
                 const INITIAL_VIRTUAL_SOL = 30000000000n;
-                const INITIAL_VIRTUAL_TOKEN = 1073000000000000n;
+                const INITIAL_VIRTUAL_TOKEN = 1073000191000000n;
                 const k = INITIAL_VIRTUAL_SOL * INITIAL_VIRTUAL_TOKEN;
                 const new_virtual_token = INITIAL_VIRTUAL_TOKEN - dev_token_units;
                 if (new_virtual_token > 0n) {
