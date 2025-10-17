@@ -52,13 +52,13 @@ document.addEventListener("DOMContentLoaded", () => {
             currentSolPrice = data.solana_usd || data.solPrice || 0; // depending on your API key
             if (solPriceElement) solPriceElement.textContent = `SOL: $${currentSolPrice.toFixed(2)}`;
         } catch (err) {
-            console.error("❌ Error fetching SOL price:", err);
+            console.error("âŒ Error fetching SOL price:", err);
             if (solPriceElement) solPriceElement.textContent = "SOL: --";
         }
     }
     // fetch immediately and every 30 seconds
     fetchSolPrice();
-    setInterval(fetchSolPrice, 10000);
+    setInterval(fetchSolPrice, 30000);
 
 
     
@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function loadImageWithFallback(imgElement, primaryUrl, coinMint) {
         imgElement.src = resolveImageUrl(primaryUrl);
         imgElement.onerror = function () {
-            console.warn(`⚠️ Image failed for ${coinMint}, trying IPFS fallback...`);
+            console.warn(`âš ï¸ Image failed for ${coinMint}, trying IPFS fallback...`);
             try {
                 const urlObj = new URL(primaryUrl);
                 const ipfsHash = urlObj.searchParams.get("ipfs");
@@ -182,7 +182,7 @@ async function fetchLiveTokens() {
 
         if (tokens.length === 0) return;
 
-        // No need to sort client-side—the endpoint already sorts newest first (descending creationTime)
+        // No need to sort client-sideâ€”the endpoint already sorts newest first (descending creationTime)
         // tokens.sort((a, b) => b.creationTime - a.creationTime); // Comment this out
         
         
@@ -200,7 +200,7 @@ async function fetchLiveTokens() {
 
 
 
-        // Step 1: sort all displayed tokens newest → oldest
+        // Step 1: sort all displayed tokens newest â†’ oldest
 displayedTokensObjects.sort((a,b) => b.creationTime - a.creationTime);
 
 // Step 2: clear current feed
@@ -236,7 +236,7 @@ for (const token of displayedTokensObjects) {
             feedContainer.removeChild(feedContainer.lastChild);
         }
     } catch (err) {
-        console.error("❌ Fetch Error:", err);
+        console.error("âŒ Fetch Error:", err);
         if(isInitialLoad && statusElement){
             statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
         }
@@ -255,10 +255,9 @@ for (const token of displayedTokensObjects) {
             }
             if (dev_held > 0) {
                 const TOKEN_DECIMALS = 6;
-                const multiplier = Math.pow(10, TOKEN_DECIMALS);
-                const dev_token_units = BigInt(Math.floor(dev_held * multiplier));
+                const dev_token_units = BigInt(Math.floor(dev_held * Math.pow(10, TOKEN_DECIMALS)));
                 const INITIAL_VIRTUAL_SOL = 30000000000n;
-                const INITIAL_VIRTUAL_TOKEN = 1073000191000000n;
+                const INITIAL_VIRTUAL_TOKEN = 1073000000000000n;
                 const k = INITIAL_VIRTUAL_SOL * INITIAL_VIRTUAL_TOKEN;
                 const new_virtual_token = INITIAL_VIRTUAL_TOKEN - dev_token_units;
                 if (new_virtual_token > 0n) {
@@ -281,7 +280,7 @@ for (const token of displayedTokensObjects) {
             const socialsHTML = Object.entries({twitter: token.twitter, telegram: token.telegram, website: token.website}).filter(([,url]) => url).map(([name, url]) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white" title="${name.charAt(0).toUpperCase() + name.slice(1)}">${socialIcons[name] || ''}</a>`).join('');
             const pumpLink = `https://pump.fun/${token.coinMint}`;
             const dexLink = `https://dexscreener.com/solana/${token.coinMint}`;
-            card.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center"><div class="col-span-2 sm:col-span-1"><img id="img-${token.coinMint}" alt="${token.ticker}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"></div><div class="col-span-5 sm:col-span-5 flex flex-col justify-center"><div class="flex items-center space-x-2"><p class="font-bold text-white truncate">${token.ticker}</p><div class="flex items-center space-x-1.5">${socialsHTML}</div></div><div class="flex items-center space-x-2 text-xs text-gray-400 flex-wrap"><span class="truncate block max-w-[80px] sm:max-w-[120px]" title="${token.name}">${token.name}</span><span class="text-gray-500">•</span><span>${formatAge(token.creationTime)}</span><div class="copy-address-container flex items-center space-x-1 cursor-pointer hover:text-white" title="Copy Address"><span class="font-mono token-address">${token.coinMint.substring(0, 4)}...${token.coinMint.substring(token.coinMint.length - 4)}</span><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div></div></div><div class="hidden sm:col-span-3 sm:grid grid-cols-1 gap-2 text-xs text-center"><div><div class="text-gray-500">Liq</div><div class="font-semibold text-white">${formatNum(liquidityUSD)}</div></div></div><div class="col-span-5 sm:col-span-3 flex items-center justify-end space-x-2"><a href="${pumpLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-2 rounded-md" title="Buy on Pump.fun"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 13.5L12 18L7.5 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></a><a href="${dexLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-2 rounded-md" title="View on DexScreener"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg></a><button class="get-insight-btn ai-btn text-xs font-bold px-3 py-1.5 rounded-md" title="Get AI Insight">AI</button></div></div><div class="insight-content hidden mt-3 p-3 bg-gray-900/50 rounded text-sm text-purple-300 italic"></div>`;
+            card.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center"><div class="col-span-2 sm:col-span-1"><img id="img-${token.coinMint}" alt="${token.ticker}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"></div><div class="col-span-5 sm:col-span-5 flex flex-col justify-center"><div class="flex items-center space-x-2"><p class="font-bold text-white truncate">${token.ticker}</p><div class="flex items-center space-x-1.5">${socialsHTML}</div></div><div class="flex items-center space-x-2 text-xs text-gray-400 flex-wrap"><span class="truncate block max-w-[80px] sm:max-w-[120px]" title="${token.name}">${token.name}</span><span class="text-gray-500">â€¢</span><span>${formatAge(token.creationTime)}</span><div class="copy-address-container flex items-center space-x-1 cursor-pointer hover:text-white" title="Copy Address"><span class="font-mono token-address">${token.coinMint.substring(0, 4)}...${token.coinMint.substring(token.coinMint.length - 4)}</span><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div></div></div><div class="hidden sm:col-span-3 sm:grid grid-cols-1 gap-2 text-xs text-center"><div><div class="text-gray-500">Liq</div><div class="font-semibold text-white">${formatNum(liquidityUSD)}</div></div></div><div class="col-span-5 sm:col-span-3 flex items-center justify-end space-x-2"><a href="${pumpLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-2 rounded-md" title="Buy on Pump.fun"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 13.5L12 18L7.5 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></a><a href="${dexLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-2 rounded-md" title="View on DexScreener"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg></a><button class="get-insight-btn ai-btn text-xs font-bold px-3 py-1.5 rounded-md" title="Get AI Insight">AI</button></div></div><div class="insight-content hidden mt-3 p-3 bg-gray-900/50 rounded text-sm text-purple-300 italic"></div>`;
             const imgElement = card.querySelector(`#img-${token.coinMint}`);
             loadImageWithFallback(imgElement, token.imageUrl, token.coinMint);
             const insightBtn = card.querySelector('.get-insight-btn');
