@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const feedContainer = document.getElementById('token-feed');
     if (feedContainer) {
         const POLLING_INTERVAL_MS = 4000;
-        const GEMINI_API_KEY = ""; // Canvas injects this.
+        const GEMINI_API_KEY = "AIzaSyArWHLzqqPOwi0CDaXp63OXAXSpjprppo8"; // Canvas injects this.
         const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
         const displayedTokens = new Set();
         const insightsCache = new Map();
