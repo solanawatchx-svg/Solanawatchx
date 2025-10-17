@@ -20,7 +20,7 @@ body {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-#sol-price {
+.sol-price {
   display: none !important;
 }
 .token-card {
