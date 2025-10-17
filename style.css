@@ -44,7 +44,7 @@ body {
     border: 1px solid rgba(165, 94, 227, 0.5);
     color: #c471ed;
     transition: all 0.3s ease;
-    display: none !important;
+    /*display: none !important;*/
 }
 .ai-btn:hover {
     background: rgba(165, 94, 227, 0.3);
