@@ -167,8 +167,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let supabaseTokenClient = null;
         if (typeof supabase !== 'undefined') {
-            const SUPABASE_URL = 'https://dyferdlczmzxurlfrjnd.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5ZmVyZGxjem16eHVybGZyam5kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjYxMDMsImV4cCI6MjA3NDIwMjEwM30.LTXkmO2MkqYqg4g7Bv7H8u1rgQnDnQ43FDaT7DzFAt8';
+            const SUPABASE_URL = 'https://dnatsfjoejzvrrktponu.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuYXRzZmpvZWp6dnJya3Rwb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3NjAzOTQsImV4cCI6MjA3NjMzNjM5NH0.Cvdla5NoQfW7_O-urhi0iUTIsUMPGJIXpPYAp9ZU_rc';
             const { createClient } = supabase;
             supabaseTokenClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
