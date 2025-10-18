@@ -112,6 +112,49 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
+    function getTokenDisplayData(token) {
+        let liquidity_sol = 0;
+        let dev_held = 0;
+        for (const h of token.holders) {
+            if (h.holderId === token.dev) {
+                dev_held = h.totalTokenAmountHeld;
+                break;
+            }
+        }
+        if (dev_held > 0) {
+            const TOKEN_DECIMALS = 6;
+            const dev_token_units = BigInt(Math.floor(dev_held * Math.pow(10, TOKEN_DECIMALS)));
+            const INITIAL_VIRTUAL_SOL = 30000000000n;
+            const INITIAL_VIRTUAL_TOKEN = 1073000000000000n;
+            const k = INITIAL_VIRTUAL_SOL * INITIAL_VIRTUAL_TOKEN;
+            const new_virtual_token = INITIAL_VIRTUAL_TOKEN - dev_token_units;
+            if (new_virtual_token > 0n) {
+                const new_virtual_sol = k / new_virtual_token;
+                const delta_lamports = new_virtual_sol - INITIAL_VIRTUAL_SOL;
+                liquidity_sol = Number(delta_lamports) / 1e9;
+            }
+        }
+        const liquidityUSD = currentSolPrice ? liquidity_sol * currentSolPrice : 0;
+
+        const processedImg = resolveImageUrl(token.imageUrl);
+
+        const socials = {
+            twitter: token.twitter,
+            telegram: token.telegram,
+            website: token.website
+        };
+
+        return {
+            name: token.name,
+            ticker: token.ticker,
+            socials,
+            img_url: processedImg,
+            liquidity: liquidityUSD,
+            address: token.coinMint,
+            timestamp: token.creationTime
+        };
+    }
+
     // ===============================
     // --- LIVE TOKEN FEED ---
     // ===============================
@@ -121,6 +164,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const displayedTokens = new Set();
         const statusElement = document.getElementById('status');
         let isInitialLoad = true;
+
+        let supabaseTokenClient = null;
+        if (typeof supabase !== 'undefined') {
+            const SUPABASE_URL = 'https://dyferdlczmzxurlfrjnd.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5ZmVyZGxjem16eHVybGZyam5kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjYxMDMsImV4cCI6MjA3NDIwMjEwM30.LTXkmO2MkqYqg4g7Bv7H8u1rgQnDnQ43FDaT7DzFAt8';
+            const { createClient } = supabase;
+            supabaseTokenClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
 
         const formatNum = (n) =>
             n >= 1e6 ? `$${(n/1e6).toFixed(2)}M`
@@ -143,7 +194,6 @@ async function fetchLiveTokens() {
         if (!response.ok) throw new Error('Failed to fetch live tokens');
         const { tokens } = await response.json();
 
-
         if (isInitialLoad) {
             if(statusElement) statusElement.style.display = 'none';
             isInitialLoad = false;
@@ -151,9 +201,8 @@ async function fetchLiveTokens() {
 
         if (tokens.length === 0) return;
 
-        // No need to sort client-sideâ€”the endpoint already sorts newest first (descending creationTime)
+        // No need to sort client-side—the endpoint already sorts newest first (descending creationTime)
         // tokens.sort((a, b) => b.creationTime - a.creationTime); // Comment this out
-        
         
         const newTokens = [];
         for (const token of tokens) {
@@ -167,9 +216,29 @@ async function fetchLiveTokens() {
             //}
         }
 
+        if (supabaseTokenClient && newTokens.length > 0) {
+            const newData = newTokens.map(token => getTokenDisplayData(token));
+            const { error } = await supabaseTokenClient
+                .from('tokens')
+                .insert(newData);
+            if (!error) {
+                const { count } = await supabaseTokenClient
+                    .from('tokens')
+                    .select('*', { count: 'exact', head: true });
+                console.log(`Inserted ${newData.length} tokens, total count: ${count}`);
+                if (count > 1600000) {  // Approx threshold for ~470MB based on avg row size ~292 bytes
+                    await supabaseTokenClient
+                        .from('tokens')
+                        .delete()
+                        .neq('id', 0);  // Delete all records (assumes 'id' column exists)
+                    console.log('Auto-reset: Cleared all token data due to size limit exceeded');
+                }
+            } else {
+                console.error('Error inserting token data:', error);
+            }
+        }
 
-
-        // Step 1: sort all displayed tokens newest â†’ oldest
+        // Step 1: sort all displayed tokens newest → oldest
         displayedTokensObjects.sort((a,b) => b.creationTime - a.creationTime);
 
         // Step 2: clear current feed
@@ -192,9 +261,9 @@ async function fetchLiveTokens() {
         //}
 
         //for (let i = newTokens.length - 1; i >= 0; i--) {
-            //const el = createTokenElement(newTokens[i]);
-           // feedContainer.prepend(el);
-           // el.classList.add('new-token-animation');
+        //const el = createTokenElement(newTokens[i]);
+       // feedContainer.prepend(el);
+       // el.classList.add('new-token-animation');
         //}
 
         
