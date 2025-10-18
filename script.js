@@ -3,8 +3,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- SUPABASE CONFIG (only for whitelist) ---
     // ===============================
     if (typeof supabase !== 'undefined') {
-        const SUPABASE_URL = 'https://dnatsfjoejzvrrktponu.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuYXRzZmpvZWp6dnJya3Rwb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3NjAzOTQsImV4cCI6MjA3NjMzNjM5NH0.Cvdla5NoQfW7_O-urhi0iUTIsUMPGJIXpPYAp9ZU_rc';
+        const SUPABASE_URL = 'https://dyferdlczmzxurlfrjnd.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5ZmVyZGxjem16eHVybGZyam5kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjYxMDMsImV4cCI6MjA3NDIwMjEwM30.LTXkmO2MkqYqg4g7Bv7H8u1rgQnDnQ43FDaT7DzFAt8';
         const { createClient } = supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
             currentSolPrice = data.solana_usd || data.solPrice || 0; // depending on your API key
             if (solPriceElement) solPriceElement.textContent = `SOL: $${currentSolPrice.toFixed(2)}`;
         } catch (err) {
-            console.error("âŒ Error fetching SOL price:", err);
+            console.error("Ã¢ÂÅ’ Error fetching SOL price:", err);
             if (solPriceElement) solPriceElement.textContent = "SOL: --";
         }
     }
@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function loadImageWithFallback(imgElement, primaryUrl, coinMint) {
         imgElement.src = resolveImageUrl(primaryUrl);
         imgElement.onerror = function () {
-            console.warn(`âš ï¸ Image failed for ${coinMint}, trying IPFS fallback...`);
+            console.warn(`Ã¢Å¡ Ã¯Â¸Â Image failed for ${coinMint}, trying IPFS fallback...`);
             try {
                 const urlObj = new URL(primaryUrl);
                 const ipfsHash = urlObj.searchParams.get("ipfs");
@@ -112,49 +112,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    function getTokenDisplayData(token) {
-        let liquidity_sol = 0;
-        let dev_held = 0;
-        for (const h of token.holders) {
-            if (h.holderId === token.dev) {
-                dev_held = h.totalTokenAmountHeld;
-                break;
-            }
-        }
-        if (dev_held > 0) {
-            const TOKEN_DECIMALS = 6;
-            const dev_token_units = BigInt(Math.floor(dev_held * Math.pow(10, TOKEN_DECIMALS)));
-            const INITIAL_VIRTUAL_SOL = 30000000000n;
-            const INITIAL_VIRTUAL_TOKEN = 1073000000000000n;
-            const k = INITIAL_VIRTUAL_SOL * INITIAL_VIRTUAL_TOKEN;
-            const new_virtual_token = INITIAL_VIRTUAL_TOKEN - dev_token_units;
-            if (new_virtual_token > 0n) {
-                const new_virtual_sol = k / new_virtual_token;
-                const delta_lamports = new_virtual_sol - INITIAL_VIRTUAL_SOL;
-                liquidity_sol = Number(delta_lamports) / 1e9;
-            }
-        }
-        const liquidityUSD = currentSolPrice ? liquidity_sol * currentSolPrice : 0;
-
-        const processedImg = resolveImageUrl(token.imageUrl);
-
-        const socials = {
-            twitter: token.twitter,
-            telegram: token.telegram,
-            website: token.website
-        };
-
-        return {
-            name: token.name,
-            ticker: token.ticker,
-            socials,
-            img_url: processedImg,
-            liquidity: liquidityUSD,
-            address: token.coinMint,
-            timestamp: token.creationTime
-        };
-    }
-
     // ===============================
     // --- LIVE TOKEN FEED ---
     // ===============================
@@ -164,14 +121,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const displayedTokens = new Set();
         const statusElement = document.getElementById('status');
         let isInitialLoad = true;
-
-        let supabaseTokenClient = null;
-        if (typeof supabase !== 'undefined') {
-            const SUPABASE_URL = 'https://dnatsfjoejzvrrktponu.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuYXRzZmpvZWp6dnJya3Rwb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3NjAzOTQsImV4cCI6MjA3NjMzNjM5NH0.Cvdla5NoQfW7_O-urhi0iUTIsUMPGJIXpPYAp9ZU_rc';
-            const { createClient } = supabase;
-            supabaseTokenClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        }
 
         const formatNum = (n) =>
             n >= 1e6 ? `$${(n/1e6).toFixed(2)}M`
@@ -194,6 +143,7 @@ async function fetchLiveTokens() {
         if (!response.ok) throw new Error('Failed to fetch live tokens');
         const { tokens } = await response.json();
 
+
         if (isInitialLoad) {
             if(statusElement) statusElement.style.display = 'none';
             isInitialLoad = false;
@@ -201,8 +151,9 @@ async function fetchLiveTokens() {
 
         if (tokens.length === 0) return;
 
-        // No need to sort client-side—the endpoint already sorts newest first (descending creationTime)
+        // No need to sort client-sideÃ¢â‚¬â€the endpoint already sorts newest first (descending creationTime)
         // tokens.sort((a, b) => b.creationTime - a.creationTime); // Comment this out
+        
         
         const newTokens = [];
         for (const token of tokens) {
@@ -216,29 +167,9 @@ async function fetchLiveTokens() {
             //}
         }
 
-        if (supabaseTokenClient && newTokens.length > 0) {
-            const newData = newTokens.map(token => getTokenDisplayData(token));
-            const { error } = await supabaseTokenClient
-                .from('tokens')
-                .insert(newData);
-            if (!error) {
-                const { count } = await supabaseTokenClient
-                    .from('tokens')
-                    .select('*', { count: 'exact', head: true });
-                console.log(`Inserted ${newData.length} tokens, total count: ${count}`);
-                if (count > 1600000) {  // Approx threshold for ~470MB based on avg row size ~292 bytes
-                    await supabaseTokenClient
-                        .from('tokens')
-                        .delete()
-                        .neq('id', 0);  // Delete all records (assumes 'id' column exists)
-                    console.log('Auto-reset: Cleared all token data due to size limit exceeded');
-                }
-            } else {
-                console.error('Error inserting token data:', error);
-            }
-        }
 
-        // Step 1: sort all displayed tokens newest → oldest
+
+        // Step 1: sort all displayed tokens newest Ã¢â€ â€™ oldest
         displayedTokensObjects.sort((a,b) => b.creationTime - a.creationTime);
 
         // Step 2: clear current feed
@@ -261,9 +192,9 @@ async function fetchLiveTokens() {
         //}
 
         //for (let i = newTokens.length - 1; i >= 0; i--) {
-        //const el = createTokenElement(newTokens[i]);
-       // feedContainer.prepend(el);
-       // el.classList.add('new-token-animation');
+            //const el = createTokenElement(newTokens[i]);
+           // feedContainer.prepend(el);
+           // el.classList.add('new-token-animation');
         //}
 
         
@@ -272,7 +203,7 @@ async function fetchLiveTokens() {
             feedContainer.removeChild(feedContainer.lastChild);
         }
     } catch (err) {
-        console.error("âŒ Fetch Error:", err);
+        console.error("Ã¢ÂÅ’ Fetch Error:", err);
         if(isInitialLoad && statusElement){
             statusElement.innerHTML = `<span>Connection failed. Retrying...</span>`;
         }
@@ -316,7 +247,7 @@ async function fetchLiveTokens() {
             const socialsHTML = Object.entries({twitter: token.twitter, telegram: token.telegram, website: token.website}).filter(([,url]) => url).map(([name, url]) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white" title="${name.charAt(0).toUpperCase() + name.slice(1)}">${socialIcons[name] || ''}</a>`).join('');
             const pumpLink = `https://pump.fun/${token.coinMint}`;
             const dexLink = `https://dexscreener.com/solana/${token.coinMint}`;
-            card.innerHTML = `<div class="grid grid-cols-12 gap-1 sm:gap-3 items-center"><div class="col-span-2 sm:col-span-1"><img id="img-${token.coinMint}" alt="${token.ticker}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"></div><div class="col-span-5 sm:col-span-5 flex flex-col justify-center gap-0.5"><div class="flex items-center space-x-1 sm:space-x-2"><p class="font-bold text-white text-sm">${token.ticker}</p><div class="flex items-center space-x-1 sm:space-x-1.5">${socialsHTML}</div></div><div class="flex items-center space-x-1 sm:space-x-2 text-xs text-gray-400"><span class="truncate max-w-[80px] sm:max-w-[120px]" title="${token.name}">${token.name}</span><span class="text-gray-500">•</span><span>${formatAge(token.creationTime)}</span></div><div class="copy-address-container flex items-center space-x-1 cursor-pointer hover:text-white" title="Copy Address"><span class="font-mono token-address text-xs">${token.coinMint.substring(0, 4)}...${token.coinMint.substring(token.coinMint.length - 4)}</span><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div></div><div class="col-span-2 sm:col-span-3 grid grid-cols-1 gap-1 sm:gap-2 text-xs text-center"><div><div class="text-gray-500">Liq</div><div class="font-semibold text-white">${formatNum(liquidityUSD)}</div></div></div><div class="col-span-3 sm:col-span-3 flex items-center justify-end space-x-1 sm:space-x-2"><a href="${pumpLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-1.5 sm:p-2 rounded-md" title="Buy on Pump.fun"><svg class="w-3 h-3 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 13.5L12 18L7.5 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></a><a href="${dexLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-1.5 sm:p-2 rounded-md" title="View on DexScreener"><svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg></a></div></div>`;
+            card.innerHTML = `<div class="grid grid-cols-12 gap-1 sm:gap-3 items-center"><div class="col-span-2 sm:col-span-1"><img id="img-${token.coinMint}" alt="${token.ticker}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"></div><div class="col-span-5 sm:col-span-5 flex flex-col justify-center gap-0.5"><div class="flex items-center space-x-1 sm:space-x-2"><p class="font-bold text-white text-sm">${token.ticker}</p><div class="flex items-center space-x-1 sm:space-x-1.5">${socialsHTML}</div></div><div class="flex items-center space-x-1 sm:space-x-2 text-xs text-gray-400"><span class="truncate max-w-[80px] sm:max-w-[120px]" title="${token.name}">${token.name}</span><span class="text-gray-500">â€¢</span><span>${formatAge(token.creationTime)}</span></div><div class="copy-address-container flex items-center space-x-1 cursor-pointer hover:text-white" title="Copy Address"><span class="font-mono token-address text-xs">${token.coinMint.substring(0, 4)}...${token.coinMint.substring(token.coinMint.length - 4)}</span><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div></div><div class="col-span-2 sm:col-span-3 grid grid-cols-1 gap-1 sm:gap-2 text-xs text-center"><div><div class="text-gray-500">Liq</div><div class="font-semibold text-white">${formatNum(liquidityUSD)}</div></div></div><div class="col-span-3 sm:col-span-3 flex items-center justify-end space-x-1 sm:space-x-2"><a href="${pumpLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-1.5 sm:p-2 rounded-md" title="Buy on Pump.fun"><svg class="w-3 h-3 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 13.5L12 18L7.5 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></a><a href="${dexLink}" target="_blank" rel="noopener noreferrer" class="action-btn p-1.5 sm:p-2 rounded-md" title="View on DexScreener"><svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg></a></div></div>`;
             const imgElement = card.querySelector(`#img-${token.coinMint}`);
             loadImageWithFallback(imgElement, token.imageUrl, token.coinMint);
             const copyContainer = card.querySelector('.copy-address-container');
