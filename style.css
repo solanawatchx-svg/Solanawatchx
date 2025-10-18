@@ -39,6 +39,38 @@ body {
     border-color: #4390F1;
     color: #fff;
 }
+
+/* --- NEW CUSTOM ACTION BUTTON STYLES --- */
+
+/* Pump.fun (Green Glow) */
+.pump-btn {
+    background-color: #0b1a1c; /* Darker background to make glow pop */
+    border: 1px solid rgba(0, 255, 130, 0.4); /* Neon Green Border */
+    color: #4aff92; /* Light Green Text */
+    transition: all 0.3s ease;
+}
+.pump-btn:hover {
+    background-color: #0d201e;
+    border-color: #00ff82;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(0, 255, 130, 0.5); /* The Green Glow */
+}
+
+/* Dexscreener (Orange/Brownish Glow) */
+.dex-btn {
+    background-color: #1a170b; /* Darker background to make glow pop */
+    border: 1px solid rgba(255, 165, 0, 0.4); /* Amber Border */
+    color: #ffc94a; /* Light Orange Text */
+    transition: all 0.3s ease;
+}
+.dex-btn:hover {
+    background-color: #201d0d;
+    border-color: #ffa500;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(255, 165, 0, 0.5); /* The Orange Glow */
+}
+
+
 .ai-btn {
     background: rgba(165, 94, 227, 0.15);
     border: 1px solid rgba(165, 94, 227, 0.5);
