@@ -42,33 +42,40 @@ body {
 
 /* --- NEW CUSTOM ACTION BUTTON STYLES --- */
 
-/* Pump.fun (Green Glow) */
+/* --- FAINTER CUSTOM ACTION BUTTON STYLES --- */
+
+/* Pump.fun (Faint Green Glow) */
 .pump-btn {
-    background-color: #0b1a1c; /* Darker background to make glow pop */
-    border: 1px solid rgba(0, 255, 130, 0.4); /* Neon Green Border */
-    color: #4aff92; /* Light Green Text */
+    /* Base Button Colors */
+    background-color: #121915; /* Darker, slightly desaturated background */
+    border: 1px solid rgba(49, 114, 76, 0.4); /* Subtler Green Border */
+    color: #8ce3a6; /* Softer Green Text */
     transition: all 0.3s ease;
 }
 .pump-btn:hover {
-    background-color: #0d201e;
-    border-color: #00ff82;
-    color: #fff;
-    box-shadow: 0 0 10px rgba(0, 255, 130, 0.5); /* The Green Glow */
+    /* Hover Effect (The Glow) */
+    background-color: #1a221d;
+    border-color: #31724c;
+    color: #e6ffe6;
+    box-shadow: 0 0 8px rgba(49, 114, 76, 0.5); /* The Fainter Green Glow (Reduced size and opacity) */
 }
 
-/* Dexscreener (Orange/Brownish Glow) */
+/* Dexscreener (Faint Orange/Brownish Glow) */
 .dex-btn {
-    background-color: #1a170b; /* Darker background to make glow pop */
-    border: 1px solid rgba(255, 165, 0, 0.4); /* Amber Border */
-    color: #ffc94a; /* Light Orange Text */
+    /* Base Button Colors */
+    background-color: #1a150e; /* Darker, more brownish background */
+    border: 1px solid rgba(139, 90, 43, 0.4); /* Muted Brownish-Orange Border */
+    color: #ffc27d; /* Softer Orange Text */
     transition: all 0.3s ease;
 }
 .dex-btn:hover {
-    background-color: #201d0d;
-    border-color: #ffa500;
-    color: #fff;
-    box-shadow: 0 0 10px rgba(255, 165, 0, 0.5); /* The Orange Glow */
+    /* Hover Effect (The Glow) */
+    background-color: #221d15;
+    border-color: #8b5a2b;
+    color: #fffaf0;
+    box-shadow: 0 0 8px rgba(139, 90, 43, 0.5); /* The Fainter Orange Glow (Reduced size and opacity) */
 }
+
 
 
 .ai-btn {
