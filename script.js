@@ -3,8 +3,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- SUPABASE CONFIG (only for whitelist) ---
     // ===============================
     if (typeof supabase !== 'undefined') {
-        const SUPABASE_URL = 'https://dyferdlczmzxurlfrjnd.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5ZmVyZGxjem16eHVybGZyam5kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjYxMDMsImV4cCI6MjA3NDIwMjEwM30.LTXkmO2MkqYqg4g7Bv7H8u1rgQnDnQ43FDaT7DzFAt8';
+        const SUPABASE_URL = 'https://qlseckytiljzsyijyqbe.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsc2Vja3l0aWxqenN5aWp5cWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA4MjUxMzEsImV4cCI6MjA3NjQwMTEzMX0.ruApOhHrq6CYVcLCLFYaThMOiCra0osYv9JOKRqIoDw';
         const { createClient } = supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -34,6 +34,57 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (document.getElementById('whitelist-counter')) {
            updateWhitelistCounter();
+        }
+
+        // ===============================
+        // --- TOKEN STORAGE IN SUPABASE ---
+        // ===============================
+        async function storeTokenInSupabase(token) {
+            try {
+                const processedImageUrl = resolveImageUrl(token.imageUrl);
+                let liquidityUSD = 0;
+                let liquidity_sol = 0;
+                let dev_held = 0;
+                for (const h of token.holders) {
+                    if (h.holderId === token.dev) {
+                        dev_held = h.totalTokenAmountHeld;
+                        break;
+                    }
+                }
+                if (dev_held > 0) {
+                    const TOKEN_DECIMALS = 6;
+                    const dev_token_units = BigInt(Math.floor(dev_held * Math.pow(10, TOKEN_DECIMALS)));
+                    const INITIAL_VIRTUAL_SOL = 30000000000n;
+                    const INITIAL_VIRTUAL_TOKEN = 1073000000000000n;
+                    const k = INITIAL_VIRTUAL_SOL * INITIAL_VIRTUAL_TOKEN;
+                    const new_virtual_token = INITIAL_VIRTUAL_TOKEN - dev_token_units;
+                    if (new_virtual_token > 0n) {
+                        const new_virtual_sol = k / new_virtual_token;
+                        const delta_lamports = new_virtual_sol - INITIAL_VIRTUAL_SOL;
+                        liquidity_sol = Number(delta_lamports) / 1e9;
+                    }
+                }
+                liquidityUSD = currentSolPrice ? liquidity_sol * currentSolPrice : 0;
+
+                const { error } = await supabaseClient
+                    .from('tokens')
+                    .insert({
+                        coinMint: token.coinMint,
+                        name: token.name,
+                        ticker: token.ticker,
+                        imageUrl: processedImageUrl,
+                        liquidity: liquidityUSD,
+                        creationTime: token.creationTime,
+                        twitter: token.twitter || null,
+                        telegram: token.telegram || null,
+                        website: token.website || null
+                    });
+
+                if (error) throw error;
+                console.log(`Stored token ${token.coinMint} in Supabase`);
+            } catch (error) {
+                console.error(`Error storing token ${token.coinMint}:`, error.message);
+            }
         }
     }
 
@@ -162,6 +213,11 @@ async function fetchLiveTokens() {
                 displayedTokens.add(token.coinMint);
 
               displayedTokensObjects.push(token); // keep full object
+
+                // Store new token in Supabase if client exists
+                if (typeof supabase !== 'undefined' && window.storeTokenInSupabase) {
+                    await storeTokenInSupabase(token);
+                }
             } //else {
                 //break;
             //}
