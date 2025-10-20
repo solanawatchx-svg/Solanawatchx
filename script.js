@@ -6,14 +6,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const SUPABASE_URL = 'https://qlseckytiljzsyijyqbe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsc2Vja3l0aWxqenN5aWp5cWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA4MjUxMzEsImV4cCI6MjA3NjQwMTEzMX0.ruApOhHrq6CYVcLCLFYaThMOiCra0osYv9JOKRqIoDw';
         const { createClient } = supabase;
-        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // ===============================
         // --- WHITELIST COUNTER ---
         // ===============================
         async function updateWhitelistCounter() {
             try {
-                const { count, error } = await supabaseClient
+                const { count, error } = await window.supabaseClient
                     .from('whitelist')
                     .select('*', { count: 'exact', head: true });
 
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // ===============================
         // --- TOKEN STORAGE IN SUPABASE ---
         // ===============================
-        async function storeTokenInSupabase(token) {
+        window.storeTokenInSupabase = async function(token) {
             try {
                 const processedImageUrl = resolveImageUrl(token.imageUrl);
                 let liquidityUSD = 0;
