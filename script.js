@@ -3,8 +3,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- SUPABASE CONFIG (only for whitelist) ---
     // ===============================
     if (typeof supabase !== 'undefined') {
-        const SUPABASE_URL = 'https://dyferdlczmzxurlfrjnd.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5ZmVyZGxjem16eHVybGZyam5kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjYxMDMsImV4cCI6MjA3NDIwMjEwM30.LTXkmO2MkqYqg4g7Bv7H8u1rgQnDnQ43FDaT7DzFAt8';
+        const SUPABASE_URL = 'https://qlseckytiljzsyijyqbe.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsc2Vja3l0aWxqenN5aWp5cWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA4MjUxMzEsImV4cCI6MjA3NjQwMTEzMX0.ruApOhHrq6CYVcLCLFYaThMOiCra0osYv9JOKRqIoDw';
         const { createClient } = supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
