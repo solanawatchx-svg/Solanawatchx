@@ -8,8 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const { createClient } = supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-
-
         // ===============================
         // --- TOKEN STORAGE IN SUPABASE ---
         // ===============================
@@ -176,7 +174,7 @@ async function fetchLiveTokens() {
 
         if (tokens.length === 0) return;
 
-        // No need to sort client-sideÃ¢â‚¬â€the endpoint already sorts newest first (descending creationTime)
+        // No need to sort client-sideÃ¢â‚¬â€”the endpoint already sorts newest first (descending creationTime)
         // tokens.sort((a, b) => b.creationTime - a.creationTime); // Comment this out
         
         
